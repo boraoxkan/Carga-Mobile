@@ -1,0 +1,3782 @@
+{
+    "Aion": {
+      "S": [
+        "580"
+      ]
+    },
+    "Alfa Romeo": {
+      "Giulia": [
+        "2.0",
+        "2.0 T"
+      ],
+      "Giulietta": [
+        "1.4 TB",
+        "1.6 JTD",
+        "1.8 TBI"
+      ],
+      "145": [
+        "1.4",
+        "1.6",
+        "1.7",
+        "2.0"
+      ],
+      "146": [
+        "1.4",
+        "1.6",
+        "1.7",
+        "2.0 Ti"
+      ],
+      "147": [
+        "1.6 TS",
+        "1.9",
+        "2.0 TS"
+      ],
+      "155": [
+        "Q4",
+        "TS",
+        "TS Super Losso"
+      ],
+      "156": [
+        "1.6 TS",
+        "1.9 JTD",
+        "2.0 JTS",
+        "2.0 TS",
+        "2.5"
+      ],
+      "159": [
+        "1.8 MPI",
+        "1.8 TBI",
+        "1.9 JTD",
+        "1.9 JTS",
+        "3.2 JTS"
+      ],
+      "164": [
+        "3.0"
+      ],
+      "166": [
+        "2.0",
+        "3.0"
+      ],
+      "33": [
+        "1.5",
+        "1.7"
+      ],
+      "75": [
+        "1.8 T"
+      ],
+      "Brera": [
+        "2.2",
+        "3.2"
+      ],
+      "GT": [
+        "1.9 JTD",
+        "2.0 JTS"
+      ],
+      "GTV": [
+        "TB"
+      ],
+      "MiTo": [
+        "1.3 JTD",
+        "1.4 T",
+        "1.6 JTD"
+      ],
+      "Spider": [
+        "2.0 TS",
+        "2.2 JTS",
+        "3.0 TS"
+      ]
+    },
+    "Anadol": {
+        "A": [
+        "A1",
+        "A2",
+        "A8 / 16"
+        ]
+    },
+    "Arora": {
+        "AR-EV": [],
+        "S1": []
+    },
+    "Aston Martin": {
+        "DB11": [
+        "Coupe"
+        ],
+        "DB7": [
+        "Coupe",
+        "Volante"
+        ],
+        "DB9": [
+        "Coupe",
+        "GT 007 Bond Edition",
+        "Volante"
+        ],
+        "DBS": [
+        "DBS Coupe"
+        ],
+        "Rapide": [
+        "V12 Rapide",
+        "V12 Rapide S",
+        "V12 Rapide AMR"
+        ],
+        "Vanquish": [
+        "V12"
+        ],
+        "Vantage": [
+        "V8 Vantage",
+        "V8 Vantage Roadster",
+        "V8 Vantage S"
+        ],
+        "Virage": [
+        "Coupe",
+        "Volante"
+        ]
+    },
+    "Audi": {
+        "A1": [
+        "1.0 TFSI",
+        "1.4 TFSI",
+        "1.6 TDI"
+        ],
+        "A2": [
+        "1.4"
+        ],
+        "A3": [
+        "A3 Cabrio",
+        "A3 Hatchback",
+        "A3 Sedan",
+        "A3 Sportback"
+        ],
+        "A4": [
+        "A4 Avant",
+        "A4 Cabrio",
+        "A4 Sedan",
+        "A4 Allroad quattro"
+        ],
+        "A5": [
+        "A5 Cabrio",
+        "A5 Coupe",
+        "A5 Sedan",
+        "A5 Sportback"
+        ],
+        "A6": [
+        "A6 Sedan",
+        "A6 Avant",
+        "A6 Allroad Quattro"
+        ],
+        "A7": [
+        "40 TDI",
+        "45 TFSI",
+        "50 TDI",
+        "2.0 TFSI",
+        "3.0 TDI",
+        "3.0 TFSI"
+        ],
+        "A8": [
+        "50 TDI",
+        "55 TFSI",
+        "60 TFSI",
+        "2.0 TFSI Quattro",
+        "2.5 TDI",
+        "3.0",
+        "3.0 TDI",
+        "3.2 FSI",
+        "3.7",
+        "4.0 TDI Quattro",
+        "4.0 TFSI Quattro",
+        "4.2",
+        "4.2 TDI",
+        "6.0",
+        "6.3 FSI Quattro"
+        ],
+        "E-Tron GT": [
+        "GT Quattro",
+        "GT RS"
+        ],
+        "R8": [
+        "4.2 FSI",
+        "5.2 FSI"
+        ],
+        "RS": [
+        "RS 3",
+        "RS 4",
+        "RS 5",
+        "RS 6",
+        "RS 7"
+        ],
+        "S Serisi": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8"
+        ],
+        "TT": [
+        "1.8",
+        "2.0",
+        "2.5 TFSI"
+        ],
+        "TTS": [
+        "2.0 TFSI",
+        "Quattro"
+        ],
+        "80 Serisi": [
+        "1.6",
+        "1.6 D",
+        "1.6 TD",
+        "1.8",
+        "1.8 S",
+        "1.9",
+        "1.9 TDI",
+        "2.0",
+        "2.0 E",
+        "2.0 Quattro"
+        ],
+        "90 Serisi": [
+        "2.0"
+        ],
+        "100 Serisi": [
+        "1.8",
+        "2.0",
+        "2.5 TDI"
+        ],
+        "200 Serisi": [
+        "2.2"
+        ],
+        "Cabrio": [
+        "2.0"
+        ]
+    },
+    "Bentley": {
+        "Continental": [
+        "Flying Spur",
+        "Flying Spur Speed",
+        "GT",
+        "GTC",
+        "GTC S",
+        "GTC Speed",
+        "GT Speed",
+        "GT Supersports"
+        ],
+        "Flying Spur": [
+        "4.0",
+        "6.0"
+        ],
+        "Arnage": [
+        "T"
+        ],
+        "Mulsanne": [
+        "6.75"
+        ]
+    },
+    "BMW": {
+        "1 Serisi": [
+        "116d",
+        "116d ED",
+        "116i",
+        "118d",
+        "118i",
+        "120d",
+        "120i",
+        "123d",
+        "135i"
+        ],
+        "2 Serisi": [
+        "216d Active Tourer",
+        "216d Gran Coupe",
+        "216d Gran Tourer",
+        "218i",
+        "218i Active Tourer",
+        "218i Gran Coupe",
+        "220d",
+        "220i Active Tourer",
+        "230e xDrive Active Tourer"
+        ],
+        "3 Serisi": [
+        "315",
+        "316",
+        "316Ci",
+        "316i",
+        "316ti",
+        "318Ci",
+        "318d",
+        "318i",
+        "318is",
+        "318tds",
+        "318ti",
+        "320Cd",
+        "320Ci",
+        "320d",
+        "320d GT",
+        "320d xDrive",
+        "320d xDrive GT",
+        "320i",
+        "320i ED",
+        "320is",
+        "320si",
+        "320td",
+        "323Ci",
+        "323i",
+        "325Ci",
+        "325i",
+        "325td",
+        "325tds",
+        "325xi",
+        "328Ci",
+        "328i",
+        "328i xDrive",
+        "330Cd",
+        "330Ci",
+        "330d",
+        "330d xDrive",
+        "330i",
+        "330i xDrive",
+        "330xd",
+        "330xi",
+        "335d",
+        "335i",
+        "335xi",
+        "340d xDrive",
+        "340i xDrive"
+        ],
+        "4 Serisi": [
+        "418d",
+        "418d Gran Coupe",
+        "418i",
+        "418i Gran Coupe",
+        "420d",
+        "420d Gran Coupe",
+        "420d xDrive",
+        "420d xDrive Gran Coupe",
+        "420i",
+        "420i Gran Coupe",
+        "428i",
+        "428i Gran Coupe",
+        "428i xDrive",
+        "428i xDrive Gran Coupe",
+        "430d xDrive Gran Coupe",
+        "430i",
+        "430i Cabrio Edition M Sport",
+        "430i Coupe Edition M Sport",
+        "430i xDrive",
+        "430i xDrive Gran Coupe",
+        "435i",
+        "435i M Sport",
+        "440i xDrive"
+        ],
+        "5 Serisi": [
+        "520d Gran Turismo",
+        "520d xDrive",
+        "520i",
+        "520Li",
+        "523i",
+        "524d",
+        "524td",
+        "525d",
+        "525d xDrive",
+        "525i",
+        "525ix",
+        "525td",
+        "525tds",
+        "525 xDrive",
+        "525xi",
+        "528i",
+        "528i xDrive",
+        "530d",
+        "530d xDrive",
+        "530i",
+        "530i xDrive",
+        "530xd Gran Turismo",
+        "530 xDrive",
+        "530xi",
+        "535d",
+        "535d xDrive",
+        "535i",
+        "535i xDrive",
+        "540i",
+        "540i xDrive",
+        "545i",
+        "550d xDrive",
+        "550i xDrive",
+        "550 xDrive"
+        ],
+        "6 Serisi": [
+        "620d xDrive",
+        "630Ci",
+        "630i",
+        "630i Gran Turismo",
+        "635CSi",
+        "635d",
+        "640d",
+        "640d xDrive",
+        "640i",
+        "640i Gran Turismo",
+        "645Ci",
+        "650Ci",
+        "650i xDrive"
+        ],
+        "7 Serisi": [
+        "725d",
+        "725d Long",
+        "728i",
+        "728i Long",
+        "730d",
+        "730d Long",
+        "730d xDrive",
+        "730d xDrive Long",
+        "730i",
+        "730i Long",
+        "735i",
+        "735i Long",
+        "740d",
+        "740d xDrive",
+        "740d xDrive Long",
+        "740e xDrive Long",
+        "740i",
+        "740i Long",
+        "745d",
+        "745i",
+        "745i Long",
+        "750d xDrive Long",
+        "750i",
+        "750 ial",
+        "750i Long",
+        "750i xDrive",
+        "750i xDrive Long",
+        "760i",
+        "760i Long",
+        "760i xDrive Long"
+        ],
+        "8 Serisi": [
+        "840Ci",
+        "840d xDrive Gran Coupe",
+        "840i xDrive",
+        "850Ci",
+        "850CSi"
+        ],
+        "i Serisi": [
+        "i3",
+        "i4",
+        "i5",
+        "i7",
+        "i8"
+        ],
+        "M Serisi": [
+        "M1",
+        "M135i",
+        "M2",
+        "M235i xDrive",
+        "M240i xDrive",
+        "M2 Competition",
+        "M3",
+        "M3 Cabrio",
+        "M3 Competition",
+        "M3 Coupe",
+        "M3 Touring",
+        "M4",
+        "M440i xDrive",
+        "M4 Competition",
+        "M5",
+        "M5 Competition",
+        "M5 CS xDrive",
+        "M6",
+        "M6 Cabrio",
+        "M6 Gran Coupe",
+        "M760e xDrive",
+        "M760i Long xDrive",
+        "M850i xDrive",
+        "M8 Coupe xDrive Competition",
+        "M8 Gran Coupe xDrive Competition"
+        ],
+        "Z Serisi": [
+        "Z1",
+        "Z3",
+        "Z4"
+        ]
+    },
+    "Buick": {
+        "Century": [
+        "3.1"
+        ],
+        "Le Sabre": [
+        "3.8"
+        ],
+        "Park Avenue": [
+        "3.8"
+        ],
+        "Regal": [
+        "3.1",
+        "3.8"
+        ],
+        "Skylark": [
+        "2.4"
+        ]
+    },
+    "BYD": {
+        "Han": [
+        "Standart"
+        ],
+        "Seal": [
+        "Excellence"
+        ]
+    },
+    "Cadillac": {
+        "CTS": [
+        "2.0 L",
+        "2.8",
+        "3.2"
+        ],
+        "BLS": [
+        "1.9D Elegance"
+        ],
+        "Brougham": [
+        "5.7 STD"
+        ],
+        "DeVille": [
+        "4.6 Concours",
+        "4.6 DTS",
+        "4.9 STD"
+        ],
+        "Eldorado": [
+        "4.9 STD"
+        ],
+        "Fleetwood": [
+        "5.7"
+        ],
+        "Seville": [
+        "4.6 SLS",
+        "4.6 STS",
+        "4.9 STS"
+        ],
+        "STS": [
+        "4.6"
+        ]
+    },
+    "Cenntro": {
+        "Aventier": [
+        "20 kW"
+        ]
+    },
+    "Chery": {
+        "Alia": [
+        "Acteco Forza",
+        "Acteco Lusso",
+        "Acteco Norma"
+        ],
+        "Chance": [
+        "1.6 Norma",
+        "2.0 Lusso"
+        ],
+        "Kimo": [
+        "Forza",
+        "Lusso"
+        ],
+        "QQ6": [
+        "1.3"
+        ],
+        "Niche": [
+        "1.6 Norma",
+        "2.0 Lusso"
+        ]
+    },
+    "Chevrolet": {
+        "Aveo": [
+        "1.2",
+        "1.3 D",
+        "1.4"
+        ],
+        "Camaro": [
+        "2.0",
+        "3.4",
+        "3.6",
+        "RS",
+        "SS",
+        "Z28",
+        "ZL1"
+        ],
+        "Cavalier": [
+        "2.2"
+        ],
+        "Celebrity": [
+        "2.5",
+        "2.8"
+        ],
+        "Corsica": [
+        "3.1"
+        ],
+        "Corvette": [
+        "C4",
+        "C5",
+        "C6",
+        "C7",
+        "C8",
+        "Z06"
+        ],
+        "Cruze": [
+        "1.4",
+        "1.4 T",
+        "1.6",
+        "2.0 D"
+        ],
+        "Epica": [
+        "2.0 D LT",
+        "2.0 LT"
+        ],
+        "Evanda": [
+        "2.0 CDX",
+        "2.0 Platinum"
+        ],
+        "Impala": [
+        "3.8",
+        "5.7"
+        ],
+        "Kalos": [
+        "1.2",
+        "1.4"
+        ],
+        "Lacetti": [
+        "1.4",
+        "1.6"
+        ],
+        "Rezzo": [
+        "1.6 SX Comfort"
+        ],
+        "Spark": [
+        "0.8",
+        "1.0"
+        ]
+    },
+    "Chrysler": {
+        "300 C": [
+        "2.7",
+        "3.0 CRD",
+        "3.5",
+        "5.7",
+        "6.1 SRT"
+        ],
+        "300 M": [
+        "2.7",
+        "3.5"
+        ],
+        "Concorde": [
+        "3.5"
+        ],
+        "Crossfire": [
+        "Coupe 3.2",
+        "Roadster 3.2"
+        ],
+        "LHS": [
+        "3.5"
+        ],
+        "Neon": [
+        "LE",
+        "LX"
+        ],
+        "PT Cruiser": [
+        "1.6",
+        "2.2 CRD",
+        "2.0",
+        "2.4"
+        ],
+        "Sebring": [
+        "2.0 CRD",
+        "2.4 Limited",
+        "2.7 Limited",
+        "2.7 LX"
+        ],
+        "Stratus": [
+        "2.0",
+        "2.5"
+        ]
+    },
+    "Citroen": {
+        "AMI": [
+        "Buggy",
+        "My Ami Peps",
+        "My Ami Pop",
+        "My Ami Vibe",
+        "One Electric"
+        ],
+        "C-Elysée": [
+        "1.2",
+        "1.5 BlueHDI",
+        "1.6 BlueHDI",
+        "1.2 VTi",
+        "1.6 HDi",
+        "1.6 VTi"
+        ],
+        "C1": [
+        "1.0",
+        "1.0 VTi",
+        "1.4 HDi"
+        ],
+        "C2": [
+        "1.4",
+        "1.4 HDi",
+        "1.6"
+        ],
+        "C3": [
+        "1.2 PureTech",
+        "1.2 VTi",
+        "1.4",
+        "1.4 e-HDi",
+        "1.4 HDi",
+        "1.4 VTi",
+        "1.6",
+        "1.6 BlueHDi",
+        "1.6 HDi",
+        "1.6 VTi"
+        ],
+        "C3 Picasso": [
+        "1.4",
+        "1.6 e-HDi",
+        "1.6 HDi"
+        ],
+        "C4": [
+        "1.2 PureTech",
+        "1.4",
+        "1.4 VTi",
+        "1.5 BlueHDi",
+        "1.6",
+        "1.6 BlueHDi",
+        "1.6 e-HDi",
+        "1.6 HDi",
+        "2.0",
+        "2.0 HDi"
+        ],
+        "C4 Grand Picasso": [
+        "1.6 BlueHDi",
+        "1.6 e-HDi",
+        "1.6 HDi",
+        "1.6 THP",
+        "2.0 HDi"
+        ],
+        "C4 Picasso": [
+        "1.6 BlueHDi",
+        "1.6 e-HDi",
+        "1.6 HDi",
+        "1.6 THP",
+        "2.0 HDi"
+        ],
+        "C4 X": [
+        "1.2 PureTech",
+        "1.5 BlueHDi"
+        ],
+        "e-C4": [
+        "Shine Bold"
+        ],
+        "e-C4 X": [
+        "Shine Bold"
+        ],
+        "C5": [
+        "1.6 e-HDi",
+        "1.6 HDi",
+        "1.6 THP",
+        "2.0",
+        "2.0 HDi",
+        "2.2 HDi",
+        "2.7 HDi",
+        "3.0"
+        ],
+        "C6": [
+        "2.7 HDi",
+        "3.0"
+        ],
+        "C8": [
+        "2.0 HDi Collection",
+        "2.0 HDi SX",
+        "2.0 X",
+        "2.2 HDi SX",
+        "3.0 SX"
+        ],
+        "Saxo": [
+        "1.4",
+        "1.5D",
+        "1.6"
+        ],
+        "Xsara": [
+        "1.4",
+        "1.6",
+        "1.8",
+        "1.9",
+        "2.0",
+        "Picasso 1.6",
+        "Picasso 1.8",
+        "Picasso 2.0"
+        ],
+        "AX": [
+        "First"
+        ],
+        "BX": [
+        "TGE"
+        ],
+        "Xantia": [
+        "1.8",
+        "1.9",
+        "2.0"
+        ],
+        "XM": [
+        "2.0",
+        "2.1"
+        ],
+        "ZX": [
+        "1.4",
+        "1.6",
+        "1.8",
+        "2.0"
+        ]
+    },
+    "Cupra": {
+        "Born": [
+        "150 kW"
+        ],
+        "Leon": [
+        "1.5 eTSI",
+        "2.0 TSI"
+        ]
+    },
+    "Dacia": {
+        "Jogger": [
+        "1.0 ECO-G",
+        "1.0 T",
+        "1.6 Hybrid"
+        ],
+        "Lodgy": [
+        "1.3 TCE",
+        "1.5 BlueDCI",
+        "1.5 dCi",
+        "1.6 ECO-G"
+        ],
+        "Logan": [
+        "0.9 Tce MCV",
+        "1.0 MCV",
+        "1.2",
+        "1.2 MCV",
+        "1.4",
+        "1.5 dCi",
+        "1.5 dCi MCV",
+        "1.6",
+        "1.6 MCV"
+        ],
+        "Sandero": [
+        "0.9 ECO-G",
+        "0.9 TCe",
+        "1.0",
+        "1.0 T",
+        "1.0 T ECO-G",
+        "1.2",
+        "1.4",
+        "1.5 BlueDCI",
+        "1.5 dCi",
+        "1.6"
+        ],
+        "Solenza": [
+        "Clima",
+        "Comfort",
+        "Prima",
+        "Rapsodie",
+        "Scala"
+        ]
+    },
+    "Daewoo": {
+        "Chairman": [
+        "600 L"
+        ],
+        "Nexia": [
+        "GL",
+        "GLE",
+        "GLX",
+        "GTX"
+        ],
+        "Nubira": [
+        "1.6",
+        "2.0"
+        ],
+        "Espero": [
+        "2.0i",
+        "CD"
+        ],
+        "Lanos": [
+        "1.3",
+        "1.5",
+        "1.6"
+        ],
+        "Leganza": [
+        "CDX",
+        "SX"
+        ],
+        "Matiz": [
+        "S",
+        "SE"
+        ],
+        "Racer": [
+        "1.5i"
+        ],
+        "Super Saloon": [
+        "2.0"
+        ],
+        "Tico": [
+        "SL",
+        "SX"
+        ]
+    },
+    "Daihatsu": {
+        "Cuore": [
+        "0.9",
+        "1.0"
+        ],
+        "Materia": [
+        "Gold"
+        ],
+        "Sirion": [
+        "1.0",
+        "1.3"
+        ],
+        "Applause": [
+        "Li",
+        "X",
+        "Xi"
+        ],
+        "Charade": [
+        "1.3",
+        "1.5"
+        ],
+        "Copen": [
+        "Sport"
+        ],
+        "YRV": [
+        "1.3",
+        "CX",
+        "Plus",
+        "Turbo"
+        ]
+    },
+    "Dodge": {
+        "Avenger": [
+        "2.0 CRD",
+        "2.4 SXT"
+        ],
+        "Challenger": [
+        "GT",
+        "R/T",
+        "SE",
+        "SRT8",
+        "SRT Hellcat",
+        "SXT Plus"
+        ],
+        "Charger": [
+        "3.6",
+        "6.2"
+        ],
+        "Magnum": [
+        "5.7",
+        "6.1"
+        ]
+    },
+    "DS Automobiles": {
+        "DS 3": [
+        "1.2 PureTech",
+        "1.2 VTi",
+        "1.6 e-HDi",
+        "1.6 THP",
+        "1.6 VTi"
+        ],
+        "DS 4": [
+        "1.2 Puretech",
+        "1.5 BlueHDi",
+        "1.6 BlueHDi",
+        "1.6 e-HDi",
+        "1.6 Puretech",
+        "1.6 THP",
+        "1.6 VTi"
+        ],
+        "DS 5": [
+        "1.6 BlueHDi",
+        "1.6 e-HDi",
+        "1.6 THP"
+        ],
+        "DS 9": [
+        "1.6 E-Tense",
+        "1.6 Puretech"
+        ]
+    },
+    "Eagle": {
+        "Talon": []
+    },
+    "Ferrari": {
+        "296": [
+        "GTB",
+        "GTS"
+        ],
+        "360": [
+        "Modena",
+        "Modena F1",
+        "Spider F1"
+        ],
+        "430": [
+        "F430",
+        "F430 Spider"
+        ],
+        "458": [
+        "Italia",
+        "Spider"
+        ],
+        "488": [
+        "GTB",
+        "Pista",
+        "Spider"
+        ],
+        "575": [
+        "575M Maranello"
+        ],
+        "599": [
+        "599 GTB F1"
+        ],
+        "612": [
+        "Scaglietti"
+        ],
+        "California": [
+        "4.3",
+        "T"
+        ],
+        "F12": [
+        "Berlinetta"
+        ],
+        "F355": [
+        "Berlinetta",
+        "Spider"
+        ],
+        "F8": [
+        "Spider",
+        "Tributo"
+        ],
+        "Portofino": [
+        "3.9"
+        ],
+        "Roma": [
+        "3.9"
+        ],
+        "SF90": [
+        "Spider 4.0",
+        "Stradale 4.0"
+        ]
+    },
+    "Fiat": {
+        "124 Spider": [
+        "Lusso"
+        ],
+        "Albea": [
+        "1.2",
+        "1.3 Multijet",
+        "1.4 Fire",
+        "1.6",
+        "Sole 1.3 Multijet",
+        "Sole 1.4 Fire"
+        ],
+        "Brava": [
+        "1.4",
+        "1.6"
+        ],
+        "Bravo": [
+        "1.4",
+        "1.4 Multiair",
+        "1.4 T-Jet",
+        "1.4 Turbo",
+        "1.6",
+        "1.6 Mjet",
+        "1.9 JTD",
+        "1.9 Mjet",
+        "2.0"
+        ],
+        "126 Bis": [
+        "126",
+        "650"
+        ],
+        "Coupe": [
+        "2.0",
+        "2.0 Turbo"
+        ],
+        "Croma": [
+        "2.0 iE"
+        ],
+        "500 Ailesi": [
+        "500 0.9 TwinAir",
+        "500 1.0 Hybrid",
+        "500 1.2",
+        "500 1.3 Mjet",
+        "500 1.4",
+        "500 Abarth",
+        "500C 1.2",
+        "500C 1.3 Mjet",
+        "500C 1.4",
+        "500 E",
+        "500L 0.9 TwinAir",
+        "500L 1.3 Mjet",
+        "500L 1.4",
+        "500L 1.6 Mjet"
+        ],
+        "Egea": [
+        "1.0 Firefly",
+        "1.3 Multijet",
+        "1.4 Fire",
+        "1.4 T-Jet",
+        "1.5 T4 Hibrit",
+        "1.6 E-Torq",
+        "1.6 Multijet"
+        ],
+        "Idea": [
+        "1.3 Multijet",
+        "1.4"
+        ],
+        "Linea": [
+        "1.3 Multijet",
+        "1.4 Fire",
+        "1.4 Turbo",
+        "1.6 Multijet"
+        ],
+        "Marea": [
+        "1.6",
+        "1.9 JTD",
+        "2.0 HLX"
+        ],
+        "Mirafiori": [
+        "1.6"
+        ],
+        "Multipla": [
+        "1.9 JTD Active"
+        ],
+        "Palio": [
+        "1.2",
+        "1.3 Multijet",
+        "1.4",
+        "1.4 Fire",
+        "1.6",
+        "1.7"
+        ],
+        "Panda": [
+        "0.9 TwinAir",
+        "1.0 Hybrid",
+        "1.1 Active",
+        "1.2",
+        "1.2 Fire",
+        "1.3 Multijet"
+        ],
+        "Punto": [
+        "1.2",
+        "1.3 Multijet",
+        "1.4",
+        "1.6",
+        "1.8 HGT",
+        "1.9 D",
+        "EVO 1.2",
+        "EVO 1.3 Multijet",
+        "EVO 1.4",
+        "Grande 1.2 S5",
+        "Grande 1.3 Multijet",
+        "Grande 1.4"
+        ],
+        "Sedici": [
+        "Emotion"
+        ],
+        "Seicento": [
+        "S"
+        ],
+        "Siena": [
+        "1.2",
+        "1.4",
+        "1.6"
+        ],
+        "Stilo": [
+        "1.2",
+        "1.4",
+        "1.6",
+        "1.9 JTD"
+        ],
+        "Tempra": [
+        "1.6",
+        "2.0"
+        ],
+        "Tipo": [
+        "1.4",
+        "1.6",
+        "1.8",
+        "2.0"
+        ],
+        "Topolino": [
+        "Topolino",
+        "Topolino Plus"
+        ],
+        "Ulysse": [
+        "2.1 TD"
+        ],
+        "UNO": [
+        "1.3",
+        "1.4 ie",
+        "1.4 ie 70 S",
+        "1.4 ie Hobby",
+        "1.4 ie SX",
+        "1.4 ie Turbo",
+        "45 S",
+        "60 S",
+        "60 SX",
+        "70 S",
+        "70 SL",
+        "70 SX",
+        "70 SXie"
+        ]
+    },
+    "Ford": {
+        "B-Max": [
+        "1.0",
+        "1.4",
+        "1.5 TDCi",
+        "1.6",
+        "1.6 TDCi"
+        ],
+        "C-Max": [
+        "1.0 EcoBoost",
+        "1.5",
+        "1.5 TDCi",
+        "1.6",
+        "1.6 EcoBoost",
+        "1.6 TDCi",
+        "1.8",
+        "2.0 TDCi"
+        ],
+        "Escort": [
+        "1.3",
+        "1.4",
+        "1.6",
+        "1.8"
+        ],
+        "Fiesta": [
+        "1.0 EcoBoost",
+        "1.0 EcoBoost Hybrid",
+        "1.0 GTDi",
+        "1.1",
+        "1.25",
+        "1.3",
+        "1.4",
+        "1.4 TDCi",
+        "1.5 EcoBoost",
+        "1.5 TDCi",
+        "1.6",
+        "1.6 TDCi",
+        "1.6 Ti-VCT",
+        "2.0"
+        ],
+        "Focus": [
+        "1.0 EcoBoost Hybrid",
+        "1.0 EcoBoost GTDi",
+        "1.4",
+        "1.5 EcoBlue",
+        "1.5 TDCi",
+        "1.5 Ti-VCT",
+        "1.6",
+        "1.6 SCTi",
+        "1.6 TDCi",
+        "1.6 Ti-VCT",
+        "1.8",
+        "1.8 TDCi",
+        "2.0",
+        "2.0 TDCi",
+        "2.3"
+        ],
+        "Fusion": [
+        "1.4 TDCi",
+        "1.6",
+        "1.6 TDCi"
+        ],
+        "Galaxy": [
+        "1.9 TDi",
+        "2.0i",
+        "2.0 TDCi Ghia",
+        "2.0 TDCi Titanium",
+        "2.3 16 V"
+        ],
+        "Grand C-Max": [
+        "1.5",
+        "1.5 TDCI",
+        "1.6 EcoBoost",
+        "1.6 TDCI"
+        ],
+        "Ka": [
+        "1.2 Titanium",
+        "1.3",
+        "1.6 Street"
+        ],
+        "Mondeo": [
+        "1.5 Ecoboost",
+        "1.5 TDCI",
+        "1.6",
+        "1.6 Ecoboost",
+        "1.6 TDCi",
+        "1.8",
+        "1.8 TDCi",
+        "2.0",
+        "2.0 TDCi",
+        "2.2 TDCi",
+        "2.5"
+        ],
+        "Mustang": [
+        "2.3 Convertible",
+        "2.3 Fastback",
+        "3.7 V6",
+        "3.8",
+        "4.0",
+        "4.0 GT",
+        "4.6 GT",
+        "5.0 Convertible",
+        "5.0 Fastback",
+        "5.0 GT",
+        "Shelby GT 500"
+        ],
+        "S-Max": [
+        "1.5 Style",
+        "1.6 TDCi Titanium",
+        "1.6 TDCi Trend",
+        "1.8 TDCi Titanium",
+        "2.0 TDCi Titanium"
+        ],
+        "Taurus": [
+        "3.0 V6 GL"
+        ],
+        "Festiva": [
+        "GL",
+        "XL"
+        ],
+        "Granada": [
+        "1.7",
+        "2.0",
+        "2.3"
+        ],
+        "Orion": [
+        "1.6 CL"
+        ],
+        "Probe": [
+        "2.2 GT"
+        ],
+        "Scorpio": [
+        "2.0",
+        "2.3"
+        ],
+        "Sierra": [
+        "2.0",
+        "XR4i"
+        ],
+        "Taunus": [
+        "1.3 L",
+        "1.6",
+        "2.0"
+        ],
+        "Thunderbird": [
+        "3.9"
+        ]
+    },
+    "Geely": {
+        "Echo": [
+        "Basic",
+        "Comfort"
+        ],
+        "Emgrand": [
+        "GS",
+        "GSL Basic",
+        "GSL Premium",
+        "GSL Premium SR"
+        ],
+        "Familia": [
+        "Comfort"
+        ],
+        "FC": [
+        "GSL"
+        ]
+    },
+    "Honda": {
+        "Accord": [
+        "1.5 VTEC",
+        "1.6",
+        "1.8",
+        "2.0",
+        "2.2",
+        "2.4",
+        "3.0"
+        ],
+        "City": [
+        "1.4",
+        "1.5 i-VTEC"
+        ],
+        "Civic": [
+        "1.4",
+        "1.5",
+        "1.5 VTEC",
+        "1.6",
+        "1.6i DTEC",
+        "1.6i VTEC",
+        "1.6 VTEC",
+        "1.7 CDTI",
+        "1.8",
+        "2.0"
+        ],
+        "CR-Z": [
+        "GT",
+        "Sport"
+        ],
+        "CRX": [
+        "1.6i",
+        "ESi",
+        "VTi"
+        ],
+        "E": [
+        "154 PS"
+        ],
+        "FR-V": [
+        "Executive"
+        ],
+        "Integra": [
+        "1.8"
+        ],
+        "Jazz": [
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.5 Hybrid"
+        ],
+        "Legend": [
+        "2.7",
+        "3.2",
+        "3.5"
+        ],
+        "NSX": [
+        "3.5"
+        ],
+        "Prelude": [
+        "2.0",
+        "2.2 VTi"
+        ],
+        "S-MX": [
+        "2.0"
+        ],
+        "S2000": [
+        "2.0 Vtec"
+        ],
+        "Shuttle": [
+        "2.2",
+        "2.3"
+        ],
+        "Stream": [
+        "Si"
+        ]
+    },
+    "Hyundai": {
+        "Accent": [
+        "1.3",
+        "1.5",
+        "1.5 CRDi",
+        "1.6"
+        ],
+        "Accent Blue": [
+        "1.4 CVVT",
+        "1.4 D-CVVT",
+        "1.6 CRDI"
+        ],
+        "Accent Era": [
+        "1.4",
+        "1.5 CRDi",
+        "1.5 CRDi-VGT",
+        "1.6"
+        ],
+        "Atos": [
+        "1.0",
+        "1.1"
+        ],
+        "Coupe": [
+        "1.6",
+        "1.8",
+        "2.0",
+        "2.7 FX"
+        ],
+        "Elantra": [
+        "1.5",
+        "1.6",
+        "1.6 CRDi",
+        "1.6 D-CVVT",
+        "1.6 MPI",
+        "1.8",
+        "2.0",
+        "2.0 CRDi"
+        ],
+        "Equus": [
+        "5.0"
+        ],
+        "Excel": [
+        "GLS",
+        "LS"
+        ],
+        "Genesis": [
+        "2.0L TCI",
+        "3.8"
+        ],
+        "Getz": [
+        "1.3",
+        "1.4 DOHC",
+        "1.5 CRDi",
+        "1.6"
+        ],
+        "Grandeur": [
+        "2.2 CRDi",
+        "3.3"
+        ],
+        "i10": [
+        "1.0 D-CVVT",
+        "1.0 MPI",
+        "1.1",
+        "1.1 CRDi",
+        "1.2 D-CVVT",
+        "1.2 MPI",
+        "1.25 D-CVVT"
+        ],
+        "i20": [
+        "1.0 T-GDI",
+        "1.2 D-CVVT",
+        "1.2 MPI",
+        "1.4 CRDi",
+        "1.4 CVVT",
+        "1.4 MPI"
+        ],
+        "i20 Active": [
+        "1.0 T-GDI",
+        "1.4 MPI"
+        ],
+        "i20 N": [
+        "1.6 T-GDI"
+        ],
+        "i20 Troy": [
+        "1.2",
+        "1.2 DOHC",
+        "1.4 CRDi",
+        "1.4 CVVT"
+        ],
+        "i30": [
+        "1.4",
+        "1.4 CVVT",
+        "1.4 MPI",
+        "1.4 T-GDI",
+        "1.6 CRDi",
+        "1.6 CVVT",
+        "1.6 DOHC",
+        "1.6 GDi",
+        "1.6 T-GDI"
+        ],
+        "i40": [
+        "1.6 GDI Prime",
+        "1.7 CRDi Executive"
+        ],
+        "Ioniq": [
+        "Elite Plus",
+        "Progressive"
+        ],
+        "Ioniq 6": [
+        "Advance",
+        "Progressive"
+        ],
+        "iX20": [
+        "1.4",
+        "1.4 CRDi",
+        "1.6"
+        ],
+        "Matrix": [
+        "1.5 CRDi",
+        "1.6"
+        ],
+        "S-Coupe": [
+        "1.5 LS",
+        "1.6 FX"
+        ],
+        "Solaris": [
+        "1.6"
+        ],
+        "Sonata": [
+        "2.0",
+        "2.0 CRDi",
+        "2.0 CVVT",
+        "2.0 SOHC",
+        "2.4",
+        "2.5",
+        "2.7"
+        ],
+        "Trajet": [
+        "2.0 CRDi GLS",
+        "2.0 GLS",
+        "2.7 V6"
+        ]
+    },
+    "I-GO": {
+        "J4": []
+    },
+    "Ikco": {
+        "1.6": [],
+        "1.6 LX": []
+    },
+    "Infiniti": {
+        "Q30": [
+        "1.5 D",
+        "1.6",
+        "2.0"
+        ],
+        "Q50": [
+        "2.0T",
+        "2.2d",
+        "3.5 V6"
+        ],
+        "Q60": [
+        "Sport Tech"
+        ],
+        "G": [
+        "G35",
+        "G37 GT",
+        "G37 S",
+        "G37 X"
+        ],
+        "I30": [
+        "3.0"
+        ],
+        "M": [
+        "M30d GT",
+        {
+            "M30d S": [
+            "M35"
+            ]
+        }
+        ]
+    },
+    "Jaguar": {
+        "Daimler": [
+        "4.0"
+        ],
+        "F-Type": [
+        "2.0",
+        "2.0 T",
+        "3.0 S",
+        "3.0 S Plus",
+        "5.0 S"
+        ],
+        "S-Type": [
+        "2.5",
+        "2.7 D",
+        "3.0",
+        "4.0",
+        "4.2 R"
+        ],
+        "Sovereign": [
+        "4.0",
+        "4.0 Long"
+        ],
+        "X-Type": [
+        "2.0 D",
+        "2.1",
+        "2.2 D",
+        "2.5",
+        "3.0"
+        ],
+        "XE": [
+        "Portfollio",
+        "Prestige",
+        "Pure",
+        "R-Dynamic SE",
+        "R-Sport"
+        ],
+        "XF": [
+        "2.0",
+        "2.0 D",
+        "2.2 D",
+        "2.7 D",
+        "3.0",
+        "3.0 D"
+        ],
+        "XJ": [
+        "2.0",
+        "2.0i",
+        "3.0 D",
+        "4.0",
+        "XJ6",
+        "XJ8"
+        ],
+        "XJ6": [
+        "Luxury"
+        ],
+        "XJR": [
+        "4.0"
+        ],
+        "XJS": [
+        "6.0"
+        ],
+        "XK8": [
+        "4.0",
+        "4.2"
+        ],
+        "XKR": [
+        "4.0 Cabrio",
+        "4.2"
+        ]
+    },
+        "Jiayuan": {
+            "Komi": []
+        },
+        "Jinpeng": {
+            "AMY": []
+        },
+        "Joyce": {
+            "One": []
+        },
+        "Katren": {
+            "Jmstar": []
+        },
+    "Kia": {
+        "Capital": [
+        "1.5 GLX",
+        "1.8"
+        ],
+        "Carens": [
+        "1.6",
+        "2.0 CRDi"
+        ],
+        "Carnival": [
+        "2.5",
+        "2.9 CRDI",
+        "2.9 TD",
+        "3.8"
+        ],
+        "Ceed": [
+        "1.0",
+        "1.4",
+        "1.4 T-GDI",
+        "1.5",
+        "1.5 Hibrit",
+        "1.5 T-GDI",
+        "1.6",
+        "1.6 CRDi",
+        "1.6 GDI",
+        "1.6 Hybrid"
+        ],
+        "Cerato": [
+        "1.5 CRDi",
+        "1.6 CRDi",
+        "1.6 EX",
+        "1.6 GSL",
+        "1.6 LX",
+        "1.6 MPI",
+        "2.0 CRDi"
+        ],
+        "Clarus": [
+        "1.8 SLX",
+        "2.0 GLX"
+        ],
+        "Magentis": [
+        "2.0 CRDi",
+        "2.0 LX",
+        "2.0 SE"
+        ],
+        "Opirus": [
+        "3.5 V6",
+        "3.8 GL"
+        ],
+        "Optima": [
+        "1.7 CRDi"
+        ],
+        "Picanto": [
+        "1.0 MPI Cool",
+        "1.0 MPI Feel",
+        "1.0 MPI Live",
+        "1.1 EX",
+        "1.1 EX Advance",
+        "1.1 EX Comfort",
+        "1.1 EX Hiper",
+        "1.1 EX Sport",
+        "1.1 Hiper",
+        "1.25 EX",
+        "1.25 MPI Comfort",
+        "1.2 Cool",
+        "1.2 Feel"
+        ],
+        "Pride": [
+        "1.3",
+        "1.3 DLX",
+        "1.3 GLXi"
+        ],
+        "Pro Ceed": [
+        "1.6",
+        "1.6 CRDi"
+        ],
+        "Rio": [
+        "1.0 TGDI",
+        "1.25 CVVT",
+        "1.2 MPI",
+        "1.3",
+        "1.4 CRDi",
+        "1.4 CVVT",
+        "1.4 EX",
+        "1.4 GSL",
+        "1.4L MPI",
+        "1.4 WGT CRDI",
+        "1.5",
+        "1.5 CRDi"
+        ],
+        "Sephia": [
+        "1.5",
+        "1.6"
+        ],
+        "Shuma": [
+        "GS",
+        "LS",
+        "RS"
+        ],
+        "Stinger": [
+        "GT Line"
+        ],
+        "Venga": [
+        "1.4 CRDi",
+        "1.6",
+        "1.6 CRDi"
+        ]
+    },
+    "Kuba": {
+        "City": [],
+        "M5": []
+    },
+    "Lada": {
+        "Kalina": [
+        "1.6"
+        ],
+        "Priora": [
+        "1.6"
+        ],
+        "Samara": [
+        "1.3",
+        "1.5"
+        ],
+        "VAZ": [
+        "2102",
+        "2103",
+        "2104",
+        "2107"
+        ],
+        "Vega": [
+        "1.5",
+        "1.6"
+        ]
+    },
+    "Lamborghini": {
+        "Aventador": [
+        "LP 700-4"
+        ],
+        "Gallardo": [
+        "5.0",
+        "LP 560-4",
+        "Spyder"
+        ],
+        "Huracan": [
+        "Evo",
+        "LP-610-4",
+        "LP-640-2"
+        ],
+        "Revuelto": [
+        "V12"
+        ]
+    },
+    "Lancia": {
+    "Delta": [
+      "1.4 T",
+      "1.4 T-Jet",
+      "1.6 Mjet",
+      "1.8"
+    ],
+    "Thema": [
+      "3.0 CRD"
+    ],
+    "Y (Ypsilon)": [
+      "0.9",
+      "1.2",
+      "1.3 Mjet",
+      "1.4"
+    ],
+    "Phedra": [
+      "2.2"
+    ],
+    "Thesis": [
+      "Sportiva"
+    ]
+  },
+    "Leapmotor": {
+        "T03": [
+        "400"
+        ]
+    },
+    "Lexus": {
+        "CT": [
+        "Comfort Plus"
+        ],
+        "ES": [
+        "Business",
+        "Business Plus",
+        "Exclusive",
+        "Executive"
+        ],
+        "GS": [
+        "200t",
+        "300"
+        ],
+        "IS": [
+        "Executive",
+        "F Sport"
+        ],
+        "LC": [
+        "Exclusive"
+        ],
+        "LM": [
+        "350h"
+        ],
+        "LS": [
+        "430",
+        "500h",
+        "600"
+        ],
+        "RC": [
+        "F"
+        ]
+    },
+    "Lincoln": {
+        "Continental": [
+        "4.6"
+        ],
+        "LS": [
+        "3.9"
+        ],
+        "MKZ": [
+        "2.0"
+        ],
+        "Town Car": [
+        "4.6"
+        ]
+    },
+    "Lotus": {
+        "Elise": [
+        "Cup R"
+        ],
+        "Emira": [
+        "2.0"
+        ],
+        "Esprit": [
+        "GT3",
+        "S4"
+        ]
+    },
+    "Luqi": {
+        "EV400": []
+    },
+    "Marcos": {
+        "Mantis": [
+        "4.6"
+        ]
+    },
+    "Maserati": {
+    "Cambiocorsa": [
+      "Coupe",
+      "Spyder"
+    ],
+    "Ghibli": [
+      "2.0 MHEV",
+      "3.0",
+      "3.0 D",
+      "3.0 GDI"
+    ],
+    "GranCabrio": [
+      "4.7"
+    ],
+    "GranCabrio E": [
+      "Folgore"
+    ],
+    "GranTurismo": [
+      "3.0",
+      "4.2",
+      "4.7 S",
+      "MC-Stradale"
+    ],
+    "MC20": [
+      "3.0"
+    ],
+    "Spyder": [
+      "2.0"
+    ],
+    "Quattroporte": [
+      "3.0",
+      "3.0 D",
+      "3.2",
+      "3.8",
+      "4.2",
+      "4.7 S"
+    ]
+  },
+  "Mazda": {
+    "2": [
+      "1.5 Sky-G",
+      "1.3",
+      "1.5"
+    ],
+    "3": [
+      "1.5 SkyActive-D",
+      "1.5 SkyActive-G",
+      "1.6",
+      "1.6 D"
+    ],
+    "5": [
+      "1.6",
+      "1.8",
+      "2.0",
+      "2.0 D"
+    ],
+    "6": [
+      "1.8",
+      "2.0",
+      "2.2",
+      "2.3 Sport"
+    ],
+    "MPV": [
+      "2.0",
+      "2.3 TE",
+      "2.5 TD"
+    ],
+    "MX": [
+      "MX-3",
+      "MX-5"
+    ],
+    "Premacy": [
+      "2.0 DiTD"
+    ],
+    "121": [
+      "1.3"
+    ],
+    "323": [
+      "1.3",
+      "1.5",
+      "1.6",
+      "1.8",
+      "2.0",
+      "2.0 DITD"
+    ],
+    "626": [
+      "1.6",
+      "1.9",
+      "2.0"
+    ],
+    "929": [
+      "2.0 GLX",
+      "3.0 Royal Classic"
+    ],
+    "Lantis": [
+      "1.6",
+      "1.8"
+    ],
+    "RX": [
+      "RX-7",
+      "RX-8"
+    ],
+    "Xedos": [
+      "6",
+      "9"
+    ]
+  },
+  "McLaren": {
+    "750S Coupe": [
+      "4.0 V8"
+    ],
+    "MP4-12C": [
+      "3.8 L"
+    ]
+  },
+  "Mercedes-Benz": {
+    "A Serisi": [
+      "A 35 AMG",
+      "A 45 AMG",
+      "A 45 S AMG",
+      "A 140",
+      "A 150",
+      "A 160",
+      "A 160 CDI",
+      "A 170",
+      "A 170 CDI",
+      "A 180",
+      "A 180 CDI",
+      "A 180 d",
+      "A 190",
+      "A 200",
+      "A 200 CDI",
+      "A 250"
+    ],
+    "AMG GT": [
+      "4.0",
+      "4.0 R",
+      "4.0 S",
+      "43 4Matic",
+      "53 4Matic",
+      "63 S 4Matic"
+    ],
+    "B Serisi": [
+      "B 150",
+      "B 160",
+      "B 170",
+      "B 180",
+      "B 180 CDI",
+      "B 180 D",
+      "B 200",
+      "B 200 CDI"
+    ],
+    "C Serisi": [
+      "C 32 AMG",
+      "C 36 AMG",
+      "C 43 AMG",
+      "C 63 AMG",
+      "C 180",
+      "C 180 d BlueTEC",
+      "C 200",
+      "C 200 CDI",
+      "C 200 D",
+      "C 200 d BlueTEC",
+      "C 220",
+      "C 220 CDI",
+      "C 220 d",
+      "C 230",
+      "C 240",
+      "C 250",
+      "C 250 CDI",
+      "C 250 D",
+      "C 250 TD",
+      "C 270 CDI",
+      "C 280",
+      "C 320",
+      "C 320 CDI"
+    ],
+    "CL": [
+      "55 AMG",
+      "63 AMG",
+      "500",
+      "550",
+      "600"
+    ],
+    "CLA": [
+      "45 S",
+      "45 AMG",
+      "180",
+      "180 d",
+      "200",
+      "220 CDI"
+    ],
+    "CLE": [
+      "300"
+    ],
+    "CLC": [
+      "CLC 160",
+      "CLC 180"
+    ],
+    "CLK": [
+      "CLK 200",
+      "CLK 230 Komp.",
+      "CLK 240",
+      "CLK 270 CDI",
+      "CLK 320",
+      "CLK 430",
+      "CLK 500"
+    ],
+    "CLS": [
+      "53 AMG",
+      "55 AMG",
+      "63 AMG",
+      "220",
+      "250 CDI",
+      "300 D",
+      "320",
+      "350",
+      "350 CDI",
+      "350 D",
+      "400 D",
+      "500"
+    ],
+    "E Serisi": [
+      "E 55 AMG",
+      "E 63 AMG",
+      "E 180",
+      "E 200",
+      "E 200 CDI",
+      "E 200 CGI",
+      "E 200 d",
+      "E 220",
+      "E 220 CDI",
+      "E 220 d",
+      "E 230",
+      "E 240",
+      "E 250",
+      "E 250 CDI",
+      "E 250 CGI",
+      "E 250 D",
+      "E 250 TD",
+      "E 270 CDI",
+      "E 280",
+      "E 280 CDI",
+      "E 290 TD",
+      "E 300",
+      "E 300 CGI",
+      "E 300 D",
+      "E 300 DE",
+      "E 300 TD",
+      "E 320",
+      "E 320 CDI",
+      "E 350",
+      "E 350 CDI",
+      "E 350 CGI",
+      "E 350 D",
+      "E 400",
+      "E 420",
+      "E 420 CDI",
+      "E 430",
+      "E 500"
+    ],
+    "EQE": [
+      "280",
+      "300+",
+      "350",
+      "350+",
+      "43",
+      "53 AMG"
+    ],
+    "EQS": [
+      "350 AMG",
+      "450",
+      "450+",
+      "53 AMG",
+      "580"
+    ],
+    "Maybach S": [
+      "S 450",
+      "S 500",
+      "S 560",
+      "S 580",
+      "S 600",
+      "S 650",
+      "S 680"
+    ],
+    "R Serisi": [
+      "R 280",
+      "R 300",
+      "R 320",
+      "R 350"
+    ],
+    "S Serisi": [
+      "S 55 AMG",
+      "S 63 AMG",
+      "S 280",
+      "S 300",
+      "S 320",
+      "S 350",
+      "S 400",
+      "S 420",
+      "S 430",
+      "S 450",
+      "S 500",
+      "S 550",
+      "S 560",
+      "S 580",
+      "S 600"
+    ],
+    "SL": [
+      "43 AMG",
+      "55 AMG",
+      "63 AMG",
+      "65 AMG",
+      "280",
+      "300",
+      "320",
+      "350",
+      "400",
+      "500",
+      "550"
+    ],
+    "SLC": [
+      "180 AMG"
+    ],
+    "SLK": [
+      "200",
+      "200 BlueEfficiency",
+      "200 Kompressor",
+      "230 Kompressor",
+      "250",
+      "280",
+      "300 AMG",
+      "350"
+    ],
+    "SLS AMG": [
+      "Coupe",
+      "Roadster"
+    ],
+    "190": [
+      "190",
+      "190 D",
+      "190 E"
+    ],
+    "200": [
+      "200",
+      "200 CE",
+      "200 D",
+      "200 E",
+      "200 TE"
+    ],
+    "220": [
+      "220 D",
+      "220 E",
+      "220 TE"
+    ],
+    "230": [
+      "230",
+      "230.4",
+      "230.6",
+      "230 CE",
+      "230 E",
+      "230 GE",
+      "230 TE"
+    ],
+    "240": [
+      "240 D"
+    ],
+    "250": [
+      "250",
+      "250 D",
+      "250 TD"
+    ],
+    "260": [
+      "260 E",
+      "260 SE"
+    ],
+    "280": [
+      "280",
+      "280 E",
+      "280 S",
+      "280 SE",
+      "280 SEL"
+    ],
+    "300": [
+      "300 CE",
+      "300 CE 24",
+      "300 D",
+      "300 E",
+      "300 E 24",
+      "300 SD",
+      "300 SE",
+      "300 SEL",
+      "300 SL",
+      "300 TD",
+      "300 TE"
+    ],
+    "320": [
+      "320 CE",
+      "320 E"
+    ],
+    "420": [
+      "420 SE",
+      "420 SEC",
+      "420 SEL"
+    ],
+    "500": [
+      "500 SE",
+      "500 SEC",
+      "500 SEL",
+      "500 SL"
+    ],
+    "560": [
+      "560 SEC",
+      "560 SEL"
+    ],
+    "600": [
+      "600 SEL"
+    ],
+    "EQE2": [
+      "220",
+      "240"
+    ],
+    "EQE4": [
+      "200",
+      "300",
+      "350"
+    ]
+  },
+  "MG": {
+    "F": [
+      "1.8"
+    ],
+    "MG4": [
+      "MG4",
+      "Comfort",
+      "Luxury",
+      "XPower"
+    ],
+    "ZR": [
+      "160"
+    ]
+  },
+  "Micro": {
+    "Microlino": [
+      "2.0"
+    ]
+  },
+  "Mini": {
+    "Cooper SD": [
+      "2.0"
+    ],
+    "Cooper": [
+      "1.5",
+      "1.5 D",
+      "1.6",
+      "1.6 D"
+    ],
+    "Cooper Clubman": [
+      "1.5",
+      "1.5 D",
+      "1.6",
+      "1.6 S",
+      "2.0"
+    ],
+    "Cooper Electric": [
+      "Classic",
+      "Iconic",
+      "Inspired",
+      "Signature"
+    ],
+    "John Cooper": [
+      "1.6",
+      "2.0"
+    ],
+    "One": [
+      "1.4",
+      "1.6"
+    ],
+    "Cooper S": [
+      "1.6",
+      "2.0"
+    ]
+  },
+  "Mitsubishi": {
+    "Attrage": [
+      "Intense",
+      "Intense Plus"
+    ],
+    "Colt": [
+      "1.1",
+      "1.3",
+      "1.5",
+      "1.5 DI-D"
+    ],
+    "Galant": [
+      "1.6",
+      "1.8",
+      "2.0",
+      "2.4 GDI"
+    ],
+    "Lancer": [
+      "1.3",
+      "1.5",
+      "1.6",
+      "1.8"
+    ],
+    "Lancer Evolution": [
+      "VI",
+      "IX",
+      "X"
+    ],
+    "3000GT": [],
+    "Airtrek": [
+      "2.0 T"
+    ],
+    "Carisma": [
+      "1.6",
+      "1.8",
+      "1.8 GDI",
+      "1.9 DI-D"
+    ],
+    "Eclipse": [
+      "2.0"
+    ],
+    "Grandis": [
+      "2.0 DI-D"
+    ],
+    "Sigma": [
+      "3.0"
+    ],
+    "Space Star": [
+      "1.2 Intense",
+      "1.2 Intense Sport Pack",
+      "1.2 Invite",
+      "1.3",
+      "1.6",
+      "1.9 DI-D"
+    ],
+    "Space Wagon": [
+      "1800 GLX"
+    ]
+  },
+  "Nieve": {
+    "Evzoom": []
+  },
+  "Nissan": {
+    "200 SX": [
+      "1.8 Turbo",
+      "2.0 Turbo"
+    ],
+    "300 ZX": [
+      "3.0 Twin Turbo"
+    ],
+    "350 Z": [
+      "Coupe",
+      "Roadster"
+    ],
+    "Almera": [
+      "1.5",
+      "1.6",
+      "1.8"
+    ],
+    "Altima": [
+      "2.0",
+      "2.4"
+    ],
+    "Bluebird": [
+      "SSS"
+    ],
+    "GT-R": [
+      "Black Edition",
+      "Nismo",
+      "Premium Edition",
+      "R35",
+      "Track Edition"
+    ],
+    "Laurel Altima": [
+      "2.0"
+    ],
+    "Maxima": [
+      "2.0 QX",
+      "3.0 QX",
+      "3.5 V6"
+    ],
+    "Micra": [
+      "1.0",
+      "1.2",
+      "1.3",
+      "1.4",
+      "1.5 dCi"
+    ],
+    "Note": [
+      "1.2",
+      "1.4",
+      "1.5 dCi",
+      "1.6"
+    ],
+    "NX Coupe": [
+      "1.6"
+    ],
+    "Primera": [
+      "1.6",
+      "1.8",
+      "2.0",
+      "2.0 TD",
+      "2.2 TD"
+    ],
+    "Pulsar": [
+      "1.2",
+      "1.5"
+    ],
+    "Skyline": [
+      "2.5"
+    ],
+    "Sunny": [
+      "1.6",
+      "2.0"
+    ],
+    "Teana": [
+      "2.3"
+    ],
+    "Tino": [
+      "1.8",
+      "2.2"
+    ],
+    "Z": [
+      "3.0"
+    ]
+  },
+  "Opel": {
+    "Adam": [
+      "1.0",
+      "1.2",
+      "1.4"
+    ],
+    "Agila": [
+      "Club",
+      "Comfort"
+    ],
+    "Ascona": [
+      "1.6",
+      "1.8",
+      "2.0"
+    ],
+    "Astra": [
+      "1.0 T",
+      "1.2 GL",
+      "1.2 T",
+      "1.3 CDTI",
+      "1.4",
+      "1.4 T",
+      "1.5 D",
+      "1.6",
+      "1.6 CDTI",
+      "1.6 T",
+      "1.7 CDTI",
+      "1.7 D",
+      "1.7 DTI",
+      "1.8",
+      "1.9 CDTI",
+      "2.0",
+      "2.0 DTI Comfort",
+      "2.0 T",
+      "2.2"
+    ],
+    "Astra-e": [
+      "Ultimate"
+    ],
+    "Calibra": [
+      "2.0",
+      "2.0 Turbo"
+    ],
+    "Cascada": [
+      "1.6 XHT Cosmo",
+      "2.0 DTH Cosmo"
+    ],
+    "Corsa": [
+      "1.0",
+      "1.2",
+      "1.2 T",
+      "1.2 Twinport",
+      "1.3 CDTI",
+      "1.4",
+      "1.4 Twinport",
+      "1.5 D",
+      "1.5 TD",
+      "1.6",
+      "1.7 DTI Comfort"
+    ],
+    "Corsa-e": [
+      "GS",
+      "Ultimate"
+    ],
+    "GT (Roadster)": [
+      "GT 2.0 Turbo"
+    ],
+    "Insignia": [
+      "1.4 T",
+      "1.5 D",
+      "1.5 T",
+      "1.6",
+      "1.6 CDTI",
+      "1.6 D",
+      "1.6 T",
+      "2.0 CDTI",
+      "2.0 T",
+      "2.8"
+    ],
+    "Kadett": [
+      "1.3",
+      "1.4",
+      "1.6",
+      "1.6 D",
+      "2.0"
+    ],
+    "Meriva": [
+      "1.3 CDTI",
+      "1.3 DTI",
+      "1.4",
+      "1.4 T",
+      "1.6",
+      "1.6 CDTI",
+      "1.7 CDTI",
+      "1.8"
+    ],
+    "Omega": [
+      "1.8",
+      "2.0",
+      "2.2",
+      "2.5",
+      "2.5 DTI",
+      "2.5 TD",
+      "2.6",
+      "3.0"
+    ],
+    "Rekord": [
+      "1.7",
+      "2.0"
+    ],
+    "Signum": [
+      "1.9 CDTI",
+      "2.2",
+      "3.0 CDTi"
+    ],
+    "Tigra": [
+      "1.4",
+      "1.4 TT Sport",
+      "1.6",
+      "1.8 TT Sport"
+    ],
+    "Vectra": [
+      "1.6",
+      "1.7 GL",
+      "1.7 TD GLS",
+      "1.8",
+      "1.9 CDTI",
+      "2.0",
+      "2.0 DTI",
+      "2.0 T",
+      "2.2",
+      "2.2 DTI",
+      "2.5",
+      "3.0 CDTI",
+      "3.2 GTS"
+    ],
+    "Zafira": [
+      "1.4",
+      "1.4 T",
+      "1.6",
+      "1.6 CDTI",
+      "1.7 CDTI",
+      "1.8",
+      "1.9 CDTI",
+      "2.0",
+      "2.0 CDTI",
+      "2.0 DTI",
+      "2.2 DTI"
+    ]
+  },
+  "Peugeot": {
+    "106": [
+      "GTI",
+      "Quicksilver",
+      "XN",
+      "XR",
+      "XS",
+      "XT"
+    ],
+    "107": [
+      "1.0",
+      "1.4 HDi"
+    ],
+    "205": [
+      "1.1",
+      "1.4",
+      "1.6",
+      "1.9"
+    ],
+    "206": [
+      "1.4",
+      "1.4 HDi",
+      "1.6",
+      "1.6 HDi",
+      "1.9",
+      "2.0",
+      "2.0 HDi"
+    ],
+    "206 +": [
+      "1.4",
+      "1.4 HDi"
+    ],
+    "207": [
+      "1.4",
+      "1.4 HDi",
+      "1.4 VTi",
+      "1.6",
+      "1.6 HDi",
+      "1.6 THP",
+      "1.6 VTi"
+    ],
+    "208": [
+      "1.0 VTi",
+      "1.2 PureTech",
+      "1.2 VTi",
+      "1.4 HDi",
+      "1.5 BlueHDi",
+      "1.6 BlueHDi",
+      "1.6 e-HDi",
+      "1.6 HDi",
+      "1.6 THP",
+      "1.6 VTi"
+    ],
+    "e-208": [
+      "GT"
+    ],
+    "301": [
+      "1.2 PureTech",
+      "1.2 VTi",
+      "1.5 BlueHDI",
+      "1.6 BlueHDI",
+      "1.6 HDi",
+      "1.6 VTi"
+    ],
+    "305": [
+      "1.5",
+      "1.9"
+    ],
+    "306": [
+      "1.4",
+      "1.6",
+      "1.8",
+      "1.9",
+      "2.0"
+    ],
+    "307": [
+      "1.4",
+      "1.4 HDi",
+      "1.6",
+      "1.6 HDi",
+      "2.0",
+      "2.0 HDi"
+    ],
+    "308": [
+      "1.2 Puretech",
+      "1.2 VTi",
+      "1.5 BlueHDI",
+      "1.6 BlueHDi",
+      "1.6 e-HDi",
+      "1.6 HDi",
+      "1.6 THP",
+      "1.6 VTi",
+      "2.0 BlueHDI"
+    ],
+    "e-308": [
+      "GT"
+    ],
+    "405": [
+      "1.6",
+      "1.8",
+      "1.9"
+    ],
+    "406": [
+      "1.6",
+      "1.8",
+      "2.0",
+      "2.0 HDi",
+      "2.2",
+      "3.0"
+    ],
+    "407": [
+      "1.6 HDi",
+      "2.0",
+      "2.0 HDi",
+      "2.2",
+      "2.2 HDi",
+      "2.7 HDi"
+    ],
+    "508": [
+      "1.5 BlueHDi",
+      "1.6 BlueHDi",
+      "1.6 e-HDi",
+      "1.6 HDi",
+      "1.6 Puretech",
+      "1.6 THP",
+      "1.6 VTi",
+      "2.0 HDi",
+      "2.2 HDi"
+    ],
+    "605": [
+      "2.0 SRi"
+    ],
+    "607": [
+      "2.0 HDi",
+      "2.2",
+      "2.2 HDi",
+      "2.7 HDi",
+      "3.0"
+    ],
+    "806": [
+      "1.9",
+      "2.0"
+    ],
+    "807": [
+      "2.0",
+      "2.2",
+      "2.2 HDi Executive"
+    ],
+    "RCZ": [
+      "Asphalt",
+      "Carbon",
+      "Evolution",
+      "Yearling"
+    ],
+    "1007": [
+      "Trendy"
+    ]
+  },
+  "Plymouth": {
+    "Laser": [
+      "2.0 L"
+    ]
+  },
+  "Polestar": {
+    "Polestar 2 Long Range": []
+  },
+  "Pontiac": {
+    "Bonneville": [
+      "SE"
+    ],
+    "Firebird": [
+      "5.7 Trans Am",
+      "5.7 V8 Formula"
+    ]
+  },
+  "Porsche": {
+    "718": [
+      "718",
+      "Boxster",
+      "Cayman",
+      "Cayman GT4 RS",
+      "Cayman S",
+      "Cayman Style Edition"
+    ],
+    "911": [
+      "Carrera",
+      "Carrera 2",
+      "Carrera 4",
+      "Carrera 4 GTS",
+      "Carrera 4S",
+      "Carrera GTS",
+      "Carrera S",
+      "GT2 RS",
+      "GT3",
+      "GT3 RS",
+      "Targa 4",
+      "Targa 4 GTS",
+      "Targa 4S",
+      "Turbo",
+      "Turbo S",
+      "Turbo S Cabriolet"
+    ],
+    "Boxster": [
+      "Boxster",
+      "S"
+    ],
+    "Cayman": [
+      "Cayman",
+      "S"
+    ],
+    "Panamera": [
+      "Panamera",
+      "Panamera Diesel",
+      "Panamera Executive",
+      "Panamera GTS",
+      "Panamera S",
+      "Panamera S Hybrid",
+      "Panamera 4",
+      "Panamera 4 - 10 Years Edition",
+      "Panamera 4 - 10 Years Edition E-Hybrid",
+      "Panamera 4 E-Hybrid",
+      "Panamera 4 Executive",
+      "Panamera 4 Platinum Edition",
+      "Panamera 4 Sport Turismo",
+      "Panamera 4S",
+      "Panamera 4S Diesel",
+      "Panamera 4S E-Hybrid",
+      "Panamera Turbo",
+      "Panamera Turbo S",
+      "Panamera Turbo S E-Hybrid"
+    ],
+    "Taycan": [
+      "4 Cross Turismo",
+      "4S",
+      "4S Cross Turismo",
+      "4S Performance",
+      "4S Performance Plus",
+      "4S Sport Turismo",
+      "GTS",
+      "GTS Sport Turismo",
+      "Taycan",
+      "Turbo",
+      "Turbo Cross Turismo",
+      "Turbo GT",
+      "Turbo S",
+      "Turbo S Cross Turismo"
+    ],
+    "Taycan E": [
+      "Taycan E Turbo GT Weissach Pack"
+    ]
+  },
+  "Proton": {
+    "Gen-2": [],
+    "Saga": [],
+    "Savvy": [],
+    "Waja": [],
+    "218": [],
+    "315": [],
+    "415": [],
+    "416": [],
+    "418": [],
+    "420": [],
+    "Perdana": [],
+    "Persona": []
+  },
+  "Rainwoll": {
+    "RW 10": []
+  },
+  "Regal Raptor": {
+    "K4": [],
+    "K5": [],
+    "K5 Long": [],
+    "K5 Pro": [],
+    "M1": []
+  },
+  "Relive": {
+    "Baw1": [],
+    "N1": []
+  },
+  "Renault": {
+    "Clio": [
+      "0.9 Sport Tourer",
+      "0.9 TCe",
+      "1.0 SCe",
+      "1.0 TCe",
+      "1.2",
+      "1.2 TCe",
+      "1.2 Grandtour",
+      "1.2 SportTourer",
+      "1.3 TCe",
+      "1.4",
+      "1.4 Grandtour",
+      "1.5 BlueDCI",
+      "1.5 dCi",
+      "1.5 dCi Grandtour",
+      "1.5 dCi SportTourer",
+      "1.6",
+      "1.6 E-Tech",
+      "1.6 Grandtour",
+      "1.8",
+      "2.0"
+    ],
+    "Espace": [
+      "1.6 dCi",
+      "1.9 dCi",
+      "2.0",
+      "2.0 dCi",
+      "2.0 dCi Grand",
+      "2.0 T",
+      "2.2",
+      "2.2 dCi",
+      "3.0",
+      "3.0 dCi",
+      "3.0 dCi Grand"
+    ],
+    "Fluence": [
+      "1.5 dCi",
+      "1.6",
+      "1.6 dCi"
+    ],
+    "Fluence Z.E.": [
+      "Dynamique",
+      "Expression"
+    ],
+    "Grand Scenic": [
+      "1.4 T",
+      "1.5 dCi",
+      "1.6",
+      "1.9 dCi"
+    ],
+    "Laguna": [
+      "1.5 dCi",
+      "1.6",
+      "1.8",
+      "1.9 dCi",
+      "1.9 DTi",
+      "2.0",
+      "2.0 dCi",
+      "2.0 T",
+      "2.2 dCi",
+      "3.0"
+    ],
+    "Latitude": [
+      "1.5 dCi",
+      "2.0 dCi",
+      "3.0 dCi"
+    ],
+    "Megane": [
+      "1.0 TCe",
+      "1.2 TCe",
+      "1.3 TCe",
+      "1.4",
+      "1.4 T",
+      "1.4 T Sport Tourer",
+      "1.5 Blue DCI",
+      "1.5 dCi",
+      "1.5 dCi Grandtour",
+      "1.5 dCi Sport Tourer",
+      "1.6",
+      "1.6 Cabrio",
+      "1.6 CC",
+      "1.6 Coupe",
+      "1.6 dCi",
+      "1.6 Grandtour",
+      "1.6 Sport Tourer",
+      "1.9 CC",
+      "1.9 D",
+      "1.9 dCi",
+      "1.9 DTi",
+      "2.0",
+      "2.0 CC",
+      "2.0 Coupe",
+      "2.0 dCi",
+      "2.0 T"
+    ],
+    "Megane E-Tech": [
+      "Iconic",
+      "Techno"
+    ],
+    "Modus": [
+      "1.4",
+      "1.5 dCi",
+      "1.6"
+    ],
+    "Safrane": [
+      "2.0",
+      "2.1",
+      "2.2",
+      "2.5"
+    ],
+    "Scenic": [
+      "1.5 dCi",
+      "1.6",
+      "1.9 dCi",
+      "1.9 DTi",
+      "2.0"
+    ],
+    "Symbol": [
+      "0.9 TCe",
+      "1.0 SCe",
+      "1.0 TCe",
+      "1.2",
+      "1.4",
+      "1.5 BlueDCI",
+      "1.5 DCI"
+    ],
+    "Taliant": [
+      "1.0 Sce",
+      "1.0 T"
+    ],
+    "Talisman": [
+      "1.3 Tce",
+      "1.5 dCi",
+      "1.6 dCi"
+    ],
+    "Twingo": [
+      "1.2",
+      "1.3"
+    ],
+    "Twizy": [
+      "75"
+    ],
+    "Vel Satis": [
+      "2.0 T",
+      "2.2 dCi",
+      "3.0 dCi",
+      "3.5"
+    ],
+    "ZOE": [
+      "Intense",
+      "ZOE"
+    ],
+    "R 5": [
+      "Five",
+      "TL"
+    ],
+    "R 9": [
+      "1.4",
+      "1.4 Broadway",
+      "1.6",
+      "1.7"
+    ],
+    "R 11": [
+      "Flash",
+      "Flash S",
+      "GTD",
+      "GTE",
+      "GTL",
+      "GTS",
+      "GTX",
+      "Rainbow",
+      "TX"
+    ],
+    "R 12": [
+      "GTS",
+      "SW",
+      "TL",
+      "TN",
+      "Toros",
+      "TS",
+      "TSW",
+      "TX"
+    ],
+    "R 19": [
+      "1.4",
+      "1.4 Europa",
+      "1.6",
+      "1.6 Europa",
+      "1.7",
+      "1.8",
+      "1.8 Europa",
+      "1.8 RTi",
+      "1.9",
+      "1.9 Europa"
+    ],
+    "R 21": [
+      "1.6",
+      "1.7",
+      "2.0"
+    ],
+    "R 25": [
+      "TX"
+    ]
+  },
+  "RKS": {
+    "A1": [],
+    "D2": [],
+    "M5": [],
+    "R3": []
+  },
+  "Roewe": {
+    "MG 550": [
+      "1.8"
+    ]
+  },
+  "Rolls-Royce": {
+    "Dawn": [
+      "6.6"
+    ],
+    "Ghost": [
+      "6.6",
+      "6.75"
+    ],
+    "Phantom": [],
+    "Wraith": [],
+    "Spectre": [
+      "Coupe"
+    ]
+  },
+  "Rover": {
+    "25": [],
+    "45": [],
+    "75": [],
+    "200": [],
+    "214": [],
+    "216": [],
+    "218": [],
+    "220": [],
+    "400": [],
+    "414": [],
+    "416": [],
+    "420": [],
+    "620": [],
+    "820": [],
+    "825": []
+  },
+  "Saab": {
+    "9-3": [],
+    "9-5": [],
+    "900": [],
+    "9000": []
+  },
+  "Saturn": {
+    "SL": []
+  },
+  "Seat": {
+    "Alhambra": [
+      "1.4 TSI",
+      "1.9 TDI",
+      "2.0",
+      "2.0 TDI",
+      "2.0 TSI"
+    ],
+    "Altea": [
+      "1.4 TSI",
+      "1.6",
+      "1.6 TDI",
+      "1.9 TDI",
+      "2.0 FSI",
+      "2.0 TDI"
+    ],
+    "Cordoba": [
+      "1.4",
+      "1.4 TDI",
+      "1.6",
+      "1.9 D",
+      "1.9 SDi",
+      "1.9 TDI",
+      "2.0"
+    ],
+    "Exeo": [
+      "1.6",
+      "2.0 TDI"
+    ],
+    "Ibiza": [
+      "1.0",
+      "1.0 EcoTSI",
+      "1.2",
+      "1.2 TDI",
+      "1.2 TSI",
+      "1.2 TSI Sport Coupe",
+      "1.2 TSI Sport Tourer",
+      "1.3",
+      "1.4",
+      "1.4 Sport Coupe",
+      "1.4 Sport Tourer",
+      "1.4 TDI",
+      "1.4 TSI Sport Coupe",
+      "1.5",
+      "1.5 EcoTSI",
+      "1.6",
+      "1.6 Sport Coupe",
+      "1.6 TDI",
+      "1.8",
+      "1.9 TDI",
+      "2.0"
+    ],
+    "Leon": [
+      "1.0 EcoTSI",
+      "1.0 eTSI",
+      "1.0 TSI",
+      "1.2 TSI",
+      "1.4 TSI",
+      "1.4 EcoTSI",
+      "1.5 EcoTSI",
+      "1.5 eTSI",
+      "1.5 TSI",
+      "1.6",
+      "1.6 TDI",
+      "1.8",
+      "1.8 T",
+      "1.9 TDI",
+      "2.0 TDI",
+      "2.0 TSI",
+      "2.0 TFSI"
+    ],
+    "Marbella": [
+      "903 Special"
+    ],
+    "Toledo": [
+      "1.2 TSI",
+      "1.4 TDI",
+      "1.4 TSI",
+      "1.6",
+      "1.6 TDI",
+      "1.8",
+      "1.9 TDI",
+      "2.0",
+      "2.0 TDI"
+    ]
+  },
+  "Skoda": {
+    "Citigo": [
+      "Ambition",
+      "Elegance"
+    ],
+    "Fabia": [
+      "1.0 GreenTec",
+      "1.0 TSI",
+      "1.2",
+      "1.2 TSI",
+      "1.4",
+      "1.4 TDI",
+      "1.4 TSI",
+      "1.5 TSI",
+      "1.6",
+      "1.6 TDI",
+      "1.9 SDI",
+      "1.9 TDI",
+      "2.0"
+    ],
+    "Favorit": [
+      "1.3",
+      "1.4",
+      "135",
+      "136"
+    ],
+    "Felicia": [
+      "1.3",
+      "1.6",
+      "1.9 D"
+    ],
+    "Forman": [
+      "135 L",
+      "135 LS",
+      "Blackline",
+      "GLX",
+      "LE",
+      "LX",
+      "Silverline"
+    ],
+    "Octavia": [
+      "1.0 e-Tec",
+      "1.0 TSI",
+      "1.2 TSI",
+      "1.4 TSI",
+      "1.5 e-Tec",
+      "1.5 Mhev",
+      "1.5 TSI",
+      "1.6",
+      "1.6 FSI",
+      "1.6 TDI",
+      "1.8 T",
+      "1.9 TDI",
+      "2.0 TDI",
+      "2.0 TDSI",
+      "2.0 TSI"
+    ],
+    "Rapid": [
+      "1.0 TSI GreenTec",
+      "1.2",
+      "1.2 TSI",
+      "1.2 TSI GreenTec",
+      "1.4 CR TDI",
+      "1.4 TDI GreenTec",
+      "1.4 TSI",
+      "1.4 TSI GreenTec",
+      "1.6 CR TDI",
+      "1.6 TDI GreenTec"
+    ],
+    "Roomster": [
+      "1.2",
+      "1.2 TSI",
+      "1.4",
+      "1.4 TDI",
+      "1.6",
+      "1.6 CR TDI",
+      "1.9 TDI"
+    ],
+    "Scala": [
+      "1.0 TSI",
+      "1.5 TSI",
+      "1.6 TDI"
+    ],
+    "Superb": [
+      "1.4 TSI",
+      "1.5 TSI",
+      "1.5 TSI Hybrid",
+      "1.6 TDI",
+      "1.8 T",
+      "1.8 TSI",
+      "1.9 TDI",
+      "2.0 TDI",
+      "2.0 TSI",
+      "2.5 TDI",
+      "2.8"
+    ],
+    "Smart": [
+      "Fortwo",
+      "Forfour",
+      "Roadster"
+    ]
+  },
+  "Subaru": {
+    "BRZ": [],
+    "Impreza": [
+      "1.8",
+      "1.5",
+      "1.6",
+      "2.0",
+      "2.5"
+    ],
+    "Legacy": [
+      "1.8",
+      "2.0",
+      "2.0 TD",
+      "2.5",
+      "3.0"
+    ],
+    "Levorg": [
+      "GT-S CVT",
+      "Sport Plus"
+    ],
+    "Justy": [
+      "1.0",
+      "1.2 GLi"
+    ],
+    "Leone": [
+      "1.6"
+    ],
+    "Vivio": []
+  },
+  "Suzuki": {
+    "Alto": [],
+    "Baleno": [],
+    "Splash": [],
+    "Swift": [],
+    "SX4": [],
+    "Liana": [],
+    "Maruti": []
+  },
+  "Tata": {
+    "Indica": [],
+    "Indigo": [],
+    "Marina": [],
+    "Vista": [],
+    "Manza": []
+  },
+  "Tesla": {
+    "Model 3": [
+      "Long Range",
+      "Standart Plus"
+    ],
+    "Model S": [
+      "75",
+      "75D",
+      "85",
+      "85D",
+      "90D",
+      "P85D",
+      "P90D",
+      "Plaid",
+      "Model S",
+      "100D",
+      "P100D"
+    ],
+    "Model X": [
+      "75D",
+      "90D",
+      "100D"
+    ],
+    "Model Y": [
+      "Long Range",
+      "Performance",
+      "Standard Range"
+    ]
+  },
+  "The London Taxi": {
+    "TX4": []
+  },
+  "Tofaş": {
+    "Doğan": [],
+    "Kartal": [],
+    "Murat": [],
+    "Şahin": [],
+    "Serçe": []
+  },
+  "Toyota": {
+    "Auris": [],
+    "Avensis": [],
+    "Camry": [],
+    "Carina": [],
+    "Celica": [],
+    "Corolla": [],
+    "Corona": [],
+    "Cressida": [],
+    "GT86": [],
+    "MR2": [],
+    "Previa": [],
+    "Prius": [],
+    "Starlet": [],
+    "Supra": [],
+    "Urban Cruiser": [],
+    "Verso": [],
+    "Yaris": []
+  },
+  "Vanderhall": {
+    "Carmel": [],
+    "Carmel GT": [],
+    "Carmel GTS": []
+  },
+  "Volkswagen": {
+    "Arteon": [
+      "1.5 TSI",
+      "2.0 TDI"
+    ],
+    "Beetle": [
+      "1.2 TSI",
+      "1.3",
+      "1.4 TSI",
+      "1.6",
+      "1.6 TDI Design",
+      "2.0"
+    ],
+    "Bora": [
+      "1.6",
+      "1.8",
+      "1.9 TDI",
+      "2.3"
+    ],
+    "Corrado": [
+      "G60"
+    ],
+    "EOS": [
+      "1.4 TSI",
+      "1.6 FSi",
+      "2.0"
+    ],
+    "FOX": [
+      "1.2"
+    ],
+    "Golf": [
+      "1.0 eTSI",
+      "1.0 TSI",
+      "1.2 TSI",
+      "1.3",
+      "1.4",
+      "1.4 TSI",
+      "1.5",
+      "1.5 eTSI",
+      "1.5 TSI",
+      "1.6",
+      "1.6 FSI",
+      "1.6 TDI",
+      "1.8",
+      "1.8 T",
+      "1.9",
+      "1.9 TDI",
+      "2.0",
+      "2.0 TDI",
+      "2.0 TSI",
+      "2.3"
+    ],
+    "ID.3": [],
+    "ID.7": [],
+    "Jetta": [
+      "1.2 TSI",
+      "1.2 TSI BlueMotion",
+      "1.3 GL",
+      "1.4 TSI",
+      "1.4 TSI BlueMotion",
+      "1.6",
+      "1.6 TDI",
+      "1.8",
+      "1.9 TDI",
+      "2.0"
+    ],
+    "Lupo": [],
+    "Passat": [
+      "1.4 TSI",
+      "1.4 TSI BlueMotion",
+      "1.5 TSI",
+      "1.6",
+      "1.6 FSI",
+      "1.6 TD GL",
+      "1.6 TDI BlueMotion",
+      "1.8",
+      "1.8 T",
+      "1.8 TSI",
+      "1.9 TDI",
+      "2.0",
+      "2.0 FSI",
+      "2.0 TDI",
+      "2.0 TDI BlueMotion",
+      "2.0 TFSI",
+      "2.0 TSI",
+      "2.5 TDI",
+      "2.8"
+    ],
+    "Passat Alltrack": [],
+    "Passat Variant": [
+      "1.4 TSI",
+      "1.4 TSI BlueMotion",
+      "1.5 e-TSI",
+      "1.5 TSI",
+      "1.6",
+      "1.6 FSI",
+      "1.6 TDI BlueMotion",
+      "1.6 TDi",
+      "1.8",
+      "1.8 T",
+      "1.8 TSI",
+      "1.9",
+      "1.9 TDI",
+      "2.0",
+      "2.0 TDI BlueMotion",
+      "2.5 TDI"
+    ],
+    "Phaeton": [
+      "3.0 TDI",
+      "3.2",
+      "3.2 Long",
+      "5.0 TDI Long"
+    ],
+    "Polo": [
+      "1.0",
+      "1.0 TSI",
+      "1.2",
+      "1.2 TDI",
+      "1.2 TSI",
+      "1.3",
+      "1.4",
+      "1.4 TDI",
+      "1.4 TSI",
+      "1.6",
+      "1.6 TDI",
+      "1.9 SDI",
+      "1.9 TDI"
+    ],
+    "Scirocco": [
+      "1.4 TSI",
+      "2.0"
+    ],
+    "Sharan": [
+      "1.9 TDI",
+      "1.9 TDI Comfortline",
+      "1.9 TDI Highline",
+      "2.0 TDI Basic",
+      "2.0 TDI Comfortline",
+      "2.0 TDI Highline",
+      "2.8"
+    ],
+    "Touran": [
+      "1.4 TSI",
+      "1.6",
+      "1.6 FSI",
+      "1.6 TDI",
+      "1.9 TDI",
+      "2.0 TDI"
+    ],
+    "Up Club": [
+      "E-Up"
+    ],
+    "VW CC": [
+      "1.4 TSI",
+      "1.8 TFSI",
+      "1.8 TSI",
+      "2.0 TDI",
+      "2.0 TSI"
+    ],
+    "Vento": [
+      "1.6",
+      "1.8",
+      "1.9",
+      "2.0"
+    ],
+    "Volta": [
+      "EV1"
+    ]
+  },
+  "Volvo": {
+    "C30": [],
+    "C70": [],
+    "S40": [],
+    "S60": [],
+    "S70": [],
+    "S80": [],
+    "S90": [],
+    "V40": [],
+    "V40 Cross Country": [],
+    "V50": [],
+    "V60": [],
+    "V60 Cross Country": [],
+    "V70": [],
+    "V90": [],
+    "V90 Cross Country": [],
+    "460": [],
+    "850": [],
+    "940": [],
+    "960": []
+  }
+  }
+  
