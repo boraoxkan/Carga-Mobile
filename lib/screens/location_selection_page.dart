@@ -2,28 +2,22 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Firebase Auth için
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore için
 import 'location_confirm_page.dart';
 import 'report_summary_page.dart';
-
-enum CrashRegion {
-  frontLeft,
-  frontCenter,
-  frontRight,
-  left,
-  right,
-  rearLeft,
-  rearCenter,
-  rearRight,
-}
+import 'package:tutanak/models/crash_region.dart';
 
 class LocationSelectionPage extends StatefulWidget {
-  final String recordId;
+  final String recordId; // creatorUid|creatorVehicleId formatında
   final bool isCreator;
+  final String? currentUserVehicleId;
 
   const LocationSelectionPage({
     Key? key,
     required this.recordId,
     required this.isCreator,
+    required this.currentUserVehicleId,
   }) : super(key: key);
 
   @override
@@ -35,14 +29,16 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
 
   void _toggleRegion(CrashRegion region) {
     setState(() {
-      if (_selectedRegions.contains(region))
+      if (_selectedRegions.contains(region)) {
         _selectedRegions.remove(region);
-      else
+      } else {
         _selectedRegions.add(region);
+      }
     });
   }
 
   Offset _offsetForRegion(CrashRegion region, Size size) {
+    // Kullanıcının sağladığı offset değerleri kullanılıyor
     switch (region) {
       case CrashRegion.frontLeft:
         return Offset(size.width * 0.2, size.height * 0.1);
@@ -64,21 +60,22 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
   }
 
   String _regionLabel(CrashRegion region) {
+    // Kullanıcının sağladığı label'lar kullanılıyor
     switch (region) {
       case CrashRegion.frontLeft:
         return 'Ön Sol';
       case CrashRegion.frontCenter:
-        return 'Ön';
+        return 'Ön'; // "Ön Orta" olarak da düşünebilirsiniz.
       case CrashRegion.frontRight:
         return 'Ön Sağ';
       case CrashRegion.left:
-        return 'Sol';
+        return 'Sol'; // "Sol Taraf" olarak da düşünebilirsiniz.
       case CrashRegion.right:
-        return 'Sağ';
+        return 'Sağ'; // "Sağ Taraf" olarak da düşünebilirsiniz.
       case CrashRegion.rearLeft:
         return 'Arka Sol';
       case CrashRegion.rearCenter:
-        return 'Arka';
+        return 'Arka'; // "Arka Orta" olarak da düşünebilirsiniz.
       case CrashRegion.rearRight:
         return 'Arka Sağ';
     }
@@ -89,15 +86,23 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isCreator
-            ? 'Kaza Yeri Seçimi (Oluşturan)'
-            : 'Kaza Yeri Seçimi (Katılan)'),
+            ? 'Aracınızdaki Hasar Bölgeleri' // Başlık güncellendi
+            : 'Aracınızdaki Hasar Bölgeleri'),// Başlık güncellendi
         backgroundColor: Colors.purple,
       ),
       body: Column(
         children: [
+           Padding( // Kullanıcıya yönelik bir açıklama eklendi
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              "Lütfen aracınızın hasar alan/alanlarını aşağıdaki şemadan seçiniz.",
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
           Expanded(
             child: Center(
-              child: Container(
+              child: SizedBox( // Container yerine SizedBox kullanılabilir
                 width: 300,
                 height: 300,
                 child: Stack(
@@ -106,26 +111,39 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                     Icon(
                       Icons.directions_car,
                       size: 180,
-                      color: Colors.purple,
+                      color: Colors.purple.shade200, // Renk biraz açıldı
                     ),
                     for (var region in CrashRegion.values)
                       Positioned(
-                        left:
-                            _offsetForRegion(region, Size(300, 300)).dx - 16,
-                        top:
-                            _offsetForRegion(region, Size(300, 300)).dy - 16,
+                        // Düğme boyutunu (40x40) göz önüne alarak merkezlemek için -20
+                        left: _offsetForRegion(region, const Size(300, 300)).dx - 20,
+                        top: _offsetForRegion(region, const Size(300, 300)).dy - 20,
                         child: GestureDetector(
                           onTap: () => _toggleRegion(region),
                           child: Container(
-                            width: 32,
-                            height: 32,
+                            width: 40, // Düğme boyutu artırıldı
+                            height: 40, // Düğme boyutu artırıldı
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: _selectedRegions.contains(region)
-                                  ? Colors.purple
-                                  : Colors.white,
-                              border: Border.all(color: Colors.purple),
+                                  ? Colors.red.shade400 // Seçiliyse kırmızı
+                                  : Colors.deepPurple.withOpacity(0.3), // Seçili değilse mor ve transparan
+                              border: Border.all(
+                                color: _selectedRegions.contains(region) ? Colors.red.shade700 : Colors.deepPurple, 
+                                width: 2
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  spreadRadius: 1,
+                                  blurRadius: 3,
+                                  offset: const Offset(0, 1),
+                                )
+                              ]
                             ),
+                            child: _selectedRegions.contains(region) // Seçiliyse check ikonu
+                                ? const Icon(Icons.check, color: Colors.white, size: 24)
+                                : null,
                           ),
                         ),
                       ),
@@ -134,30 +152,50 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
           if (_selectedRegions.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 8,
-                children: _selectedRegions.map((r) {
-                  return Chip(
-                    label: Text(_regionLabel(r)),
-                    backgroundColor: Colors.purple.shade100,
-                  );
-                }).toList(),
+              padding: const EdgeInsets.fromLTRB(16,8,16,16), // Alt boşluk artırıldı
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Seçilen Bölgeler:", style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.black54)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: _selectedRegions.map((r) {
+                      return Chip(
+                        label: Text(_regionLabel(r), style: TextStyle(color: Colors.red.shade900)),
+                        backgroundColor: Colors.red.shade100,
+                        avatar: Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 18),
+                        deleteIcon: Icon(Icons.close, size: 16, color: Colors.red.shade700),
+                        onDeleted: () {
+                          _toggleRegion(r);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
             ),
-          const Spacer(),
+          const SizedBox(height:10), 
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               onPressed: _selectedRegions.isEmpty
                   ? null
                   : () async {
-                      // 1) Harita üzerinden konum seçimi
-                      final LatLng initialPos =
-                          LatLng(41.0082, 28.9784); // örnek başlangıç
+                      // currentUserVehicleId kontrolü
+                      if (widget.currentUserVehicleId == null || widget.currentUserVehicleId!.isEmpty) {
+                          if(mounted) { // mounted kontrolü eklendi
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Araç ID bilgisi bulunamadı. Lütfen önceki adıma dönüp araç seçiminizi kontrol edin.')),
+                            );
+                          }
+                          return;
+                      }
+
+                      final LatLng initialPos = const LatLng(41.0082, 28.9784); 
                       final LatLng? confirmedPos =
                           await Navigator.push<LatLng>(
                         context,
@@ -168,23 +206,75 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                           ),
                         ),
                       );
-                      if (confirmedPos == null) return;
 
-                      // 2) Araç bilgilerini fetch edip örnek bir map oluşturun:
-                      final vehicleInfo = {
-                        'brand': 'Toyota',
-                        'model': 'Corolla',
-                        'plate': '34ABC12',
+                      if (confirmedPos == null) return;
+                      if (!mounted) return; // Async işlem sonrası context kontrolü
+
+                      Map<String, String> actualVehicleInfo = {
+                        'brand': 'Bilinmiyor',
+                        'model': 'Bilinmiyor',
+                        'plate': 'Bilinmiyor',
                       };
 
-                      // 3) Rapor özetine yönlendirin
+                      final currentUser = FirebaseAuth.instance.currentUser;
+                      
+                      if (currentUser != null) { // currentUser null kontrolü
+                        try {
+                          print("LocationSelectionPage: Fetching vehicle info for user: ${currentUser.uid}, vehicle ID: ${widget.currentUserVehicleId}");
+                          
+                          String vehicleOwnerUid = currentUser.uid;
+
+                          final vehicleDoc = await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(vehicleOwnerUid) 
+                              .collection('vehicles')
+                              .doc(widget.currentUserVehicleId)
+                              .get();
+
+                          if (vehicleDoc.exists && vehicleDoc.data() != null) {
+                            final data = vehicleDoc.data()!;
+                            actualVehicleInfo = {
+                              'brand': data['marka']?.toString() ?? 'Belirtilmemiş',
+                              'model': data['model']?.toString() ?? (data['seri']?.toString() ?? 'Belirtilmemiş'),
+                              'plate': data['plaka']?.toString() ?? 'Belirtilmemiş',
+                            };
+                            print("LocationSelectionPage: Vehicle info fetched: $actualVehicleInfo");
+                          } else {
+                            print("LocationSelectionPage: Error - Vehicle document not found for user ${vehicleOwnerUid} and vehicle ID ${widget.currentUserVehicleId}");
+                            if(mounted) { // mounted kontrolü eklendi
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Seçilen araç bilgileri bulunamadı.')),
+                              );
+                            }
+                          }
+                        } catch (e, s) {
+                          print("LocationSelectionPage: Error fetching vehicle info: $e");
+                          print("Stack trace: $s");
+                          if(mounted) { // mounted kontrolü eklendi
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Araç bilgileri çekilirken bir hata oluştu: $e')),
+                            );
+                          }
+                        }
+                      } else {
+                         print("LocationSelectionPage: Error - Current user is null.");
+                         if(mounted) { // mounted kontrolü eklendi
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Kullanıcı bilgisi alınamadı. Araç detayları çekilemedi.')),
+                          );
+                        }
+                      }
+                      
+                      if (!mounted) return; // Son bir context kontrolü
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => ReportSummaryPage(
                             selectedRegions: _selectedRegions,
-                            vehicleInfo: vehicleInfo,
+                            vehicleInfo: actualVehicleInfo,
                             confirmedPosition: confirmedPos,
+                            recordId: widget.recordId,      // << BU SATIR EKLENDİ/GÜNCELLENDİ
+                            isCreator: widget.isCreator,    // << BU SATIR EKLENDİ
                           ),
                         ),
                       );
@@ -192,8 +282,10 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.purple,
                 minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
               ),
-              child: const Text('Devam'),
+              child: const Text('Konum Seçimi ve Devam'),
             ),
           ),
         ],

@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'location_selection_page.dart';
+import 'location_selection_page.dart'; // Bu importun olduğundan emin olun
 
 class RecordConfirmationPage extends StatefulWidget {
   final String qrData;           // Okunan ham veri: creatorUid|creatorVehicleId
@@ -211,10 +211,10 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
                       // 1) Firestore kaydını güncelle
                       await FirebaseFirestore.instance
                         .collection('records')
-                        .doc(widget.qrData)
+                        .doc(widget.qrData) // qrData burada recordId'dir (creatorUid|creatorVehicleId)
                         .update({
                           'joinerUid': FirebaseAuth.instance.currentUser!.uid,
-                          'joinerVehicleId': widget.joinerVehicleId,
+                          'joinerVehicleId': widget.joinerVehicleId, // Katılanın araç ID'si
                           'confirmed': true,
                         });
                       
@@ -223,8 +223,10 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => LocationSelectionPage(
-                            recordId: widget.qrData,
-                            isCreator: false,
+                            recordId: widget.qrData,       // creatorUid|creatorVehicleId
+                            isCreator: false,              // Katılan kullanıcı olduğu için false
+                            // DEĞİŞİKLİK BURADA: Katılanın araç ID'sini aktar
+                            currentUserVehicleId: widget.joinerVehicleId, 
                           ),
                         ),
                       );

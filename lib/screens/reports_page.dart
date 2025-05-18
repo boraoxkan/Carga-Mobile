@@ -1,18 +1,23 @@
 // lib/screens/reports_page.dart
-import 'dart:io';
+import 'dart:io'; // FilePicker için gerekli olabilir, şimdilik yorumda
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'pdf_viewer_page.dart';
+import 'package:tutanak/screens/report_detail_page.dart'; // YENİ EKLENDİ
+// import 'pdf_viewer_page.dart'; // Artık ReportDetailPage içinde yönetilecek
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+// import 'package:file_picker/file_picker.dart'; // PDF yükleme için kalabilir
+// import 'package:firebase_storage/firebase_storage.dart'; // PDF yükleme için kalabilir
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({Key? key}) : super(key: key);
 
   static void showAddReportDialog(BuildContext context) {
-    _ReportsPageState()._showAddReportDialog(context);
+    // _ReportsPageState()._showAddReportDialog(context); // PDF ekleme dialogu hala çalışabilir
+    // Veya bu butonu kaldırıp, raporların sadece uygulama akışıyla oluşmasını sağlayabilirsiniz.
+     ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Manuel rapor ekleme şimdilik devre dışı.')),
+      );
   }
 
   @override
@@ -25,12 +30,16 @@ class _ReportsPageState extends State<ReportsPage> {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) return const Center(child: Text('Giriş yapılmamış.'));
 
+    // Kullanıcının dahil olduğu (creatorUid veya joinerUid) raporları çek
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('reports')
-          .orderBy('date', descending: true)
+          .collection('records') // 'records' koleksiyonunu dinle
+          .where(Filter.or( // Kullanıcının ya oluşturan ya da katılan olduğu kayıtları filtrele
+                Filter('creatorUid', isEqualTo: user.uid),
+                Filter('joinerUid', isEqualTo: user.uid)
+            ))
+          // .orderBy('date', descending: true) // 'date' alanı varsa sıralama için kullanın
+          .orderBy(FieldPath.documentId) // Veya ID'ye göre sırala
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -38,7 +47,7 @@ class _ReportsPageState extends State<ReportsPage> {
         } else if (snapshot.hasError) {
           return Center(child: Text('Hata: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('Rapor bulunamadı.'));
+          return const Center(child: Text('Henüz bir tutanak kaydınız bulunmuyor.'));
         } else {
           final reports = snapshot.data!.docs;
           return ListView.builder(
@@ -46,12 +55,28 @@ class _ReportsPageState extends State<ReportsPage> {
             itemBuilder: (context, index) {
               final reportDoc = reports[index];
               final report = reportDoc.data() as Map<String, dynamic>;
-              String title = report['title'] ?? 'Rapor';
-              String? pdfUrl = report['pdfUrl'];
-              DateTime? date;
-              if (report['date'] != null) {
-                date = (report['date'] as Timestamp).toDate();
+              
+              // Rapor başlığı (PDF başlığı veya recordId olabilir)
+              String title = report['title'] ?? "Tutanak: ${reportDoc.id.substring(0,10)}..."; // Firestore'dan gelen PDF başlığı
+              
+              // Rapor tarihi (Firestore'da uygun bir tarih alanı varsa)
+              DateTime? reportDate;
+              // Örneğin 'createdAt', 'lastUpdated_creator', 'lastUpdated_joiner' gibi bir alan varsa:
+              if (report['lastUpdated_creator'] != null) {
+                reportDate = (report['lastUpdated_creator'] as Timestamp).toDate();
+              } else if (report['lastUpdated_joiner'] != null) {
+                 reportDate = (report['lastUpdated_joiner'] as Timestamp).toDate();
               }
+              // else if (report['createdAt'] != null) { // Veya oluşturulma tarihi
+              //   reportDate = (report['createdAt'] as Timestamp).toDate();
+              // }
+
+              // İşlenmiş fotoğraf var mı kontrolü (basit bir örnek)
+              bool hasProcessedPhoto = report.containsKey('creatorProcessedDamageImageBase64') ||
+                                       report.containsKey('joinerProcessedDamageImageBase64');
+              String status = report['status'] as String? ?? "Bilinmiyor";
+
+
               return Slidable(
                 key: Key(reportDoc.id),
                 startActionPane: ActionPane(
@@ -60,67 +85,55 @@ class _ReportsPageState extends State<ReportsPage> {
                   children: [
                     SlidableAction(
                       onPressed: (context) async {
-                        bool confirm = await showDialog<bool>(
+                        // Silme onayı ve işlemi (Bu kısım aynı kalabilir)
+                         bool confirm = await showDialog<bool>(
                           context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text('Silme Onayı'),
-                              content: const Text('Bu raporu silmek istediğinize emin misiniz?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(false),
-                                  child: const Text('İptal'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(true),
-                                  child: const Text('Sil'),
-                                ),
-                              ],
-                            );
-                          },
+                          builder: (context) => AlertDialog(
+                            title: const Text('Silme Onayı'),
+                            content: Text('Bu tutanağı (${reportDoc.id.substring(0,6)}...) silmek istediğinize emin misiniz?'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('İptal')),
+                              TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Sil')),
+                            ],
+                          ),
                         ) ?? false;
                         
                         if (confirm) {
                           try {
-                            await FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(user.uid)
-                                .collection('reports')
-                                .doc(reportDoc.id)
-                                .delete();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Rapor silindi.')),
-                            );
+                            await FirebaseFirestore.instance.collection('records').doc(reportDoc.id).delete();
+                            if(mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tutanak silindi.')));
                           } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Silme hatası: $e')),
-                            );
+                            if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Silme hatası: $e')));
                           }
                         }
                       },
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      icon: Icons.delete,
-                      label: 'Sil',
+                      backgroundColor: Colors.red,foregroundColor: Colors.white,
+                      icon: Icons.delete, label: 'Sil',
                     ),
                   ],
                 ),
                 child: ListTile(
-                  leading: const Icon(Icons.insert_drive_file),
+                  leading: Icon(
+                    hasProcessedPhoto ? Icons.image_search : Icons.description_outlined, // İşlenmiş fotoğraf varsa farklı ikon
+                    color: hasProcessedPhoto ? Colors.green : Colors.blueGrey,
+                    size: 30,
+                  ),
                   title: Text(title),
-                  subtitle: date != null ? Text(date.toString()) : null,
-                  trailing: pdfUrl != null
-                      ? const Icon(Icons.picture_as_pdf, color: Colors.red)
-                      : null,
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (reportDate != null) Text("Tarih: ${reportDate.day}.${reportDate.month}.${reportDate.year}"),
+                      Text("Durum: $status"),
+                    ],
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
-                    if (pdfUrl != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PdfViewerPage(pdfUrl: pdfUrl, title: title),
-                        ),
-                      );
-                    }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReportDetailPage(recordId: reportDoc.id),
+                      ),
+                    );
                   },
                 ),
               );
@@ -131,124 +144,6 @@ class _ReportsPageState extends State<ReportsPage> {
     );
   }
 
-  void _showAddReportDialog(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
-    TextEditingController titleController = TextEditingController();
-    File? selectedFile;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        bool isUploading = false;
-        return StatefulBuilder(builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Rapor Ekle'),
-            content: SingleChildScrollView(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Rapor Başlığı',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Lütfen rapor başlığı giriniz';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () async {
-                        FilePickerResult? result = await FilePicker.platform.pickFiles(
-                          type: FileType.custom,
-                          allowedExtensions: ['pdf'],
-                        );
-                        if (result != null && result.files.single.path != null) {
-                          setState(() {
-                            selectedFile = File(result.files.single.path!);
-                          });
-                        }
-                      },
-                      child: const Text('PDF Seç'),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(selectedFile != null
-                        ? 'Seçilen dosya: ${selectedFile!.path.split('/').last}'
-                        : 'Hiçbir dosya seçilmedi'),
-                    if (isUploading) const Padding(
-                      padding: EdgeInsets.only(top: 16),
-                      child: CircularProgressIndicator(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('İptal'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (!_formKey.currentState!.validate() || selectedFile == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Lütfen tüm alanları doldurun ve PDF seçin')),
-                    );
-                    return;
-                  }
-                  setState(() {
-                    isUploading = true;
-                  });
-                  try {
-                    User? user = FirebaseAuth.instance.currentUser;
-                    if (user == null) return;
-                    // PDF dosyasını Firebase Storage'a yükle
-                    String fileName = '${DateTime.now().millisecondsSinceEpoch}.pdf';
-                    Reference storageRef = FirebaseStorage.instance
-                        .ref()
-                        .child('users')
-                        .child(user.uid)
-                        .child('reports')
-                        .child(fileName);
-                    UploadTask uploadTask = storageRef.putFile(selectedFile!);
-                    TaskSnapshot snapshot = await uploadTask;
-                    String downloadUrl = await snapshot.ref.getDownloadURL();
-
-                    // Firestore'a raporu ekle
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user.uid)
-                        .collection('reports')
-                        .add({
-                      'title': titleController.text.trim(),
-                      'pdfUrl': downloadUrl,
-                      'date': FieldValue.serverTimestamp(),
-                    });
-
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Rapor eklendi.')),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Rapor eklenirken hata oluştu: $e')),
-                    );
-                  }
-                },
-                child: const Text('Kaydet'),
-              ),
-            ],
-          );
-        });
-      },
-    );
-  }
+  // _showAddReportDialog PDF ekleme metodu (isteğe bağlı olarak kalabilir veya kaldırılabilir)
+  // void _showAddReportDialog(BuildContext context) { ... }
 }
