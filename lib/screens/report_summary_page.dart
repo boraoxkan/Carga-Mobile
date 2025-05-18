@@ -386,30 +386,51 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
+        final responseData = json.decode(response.body); // Sunucudan gelen JSON'ı decode et
         final String? imageBase64 = responseData['processed_image_base64'];
-        final List<dynamic>? detections = responseData['detections'] as List<dynamic>?;
+        final List<dynamic>? detections = responseData['detections'] as List<dynamic>?; // Tespitleri al
 
         if (imageBase64 != null) {
-          if (mounted) {
-            setState(() {
-              _processedImageBytesFromUbuntu = base64Decode(imageBase64);
-              _detectionResultsFromUbuntu = detections;
-            });
-          }
-          // İşlenmiş fotoğraf ve tespitler Firestore'a kaydedilecek
-          await _saveReportDataToFirestore(processedImageBase64: imageBase64, detections: detections);
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fotoğraf işlendi ve tutanak kaydedildi!')));
-            Navigator.popUntil(context, (route) => route.isFirst);
-          }
+            if (mounted) {
+                setState(() {
+                    _processedImageBytesFromUbuntu = base64Decode(imageBase64); // base64'ü byte'a çevir
+                    _detectionResultsFromUbuntu = detections; // Tespitleri state'e ata
+                });
+            }
+            // İşlenmiş fotoğraf (base64) ve tespitler Firestore'a kaydedilecek
+            await _saveReportDataToFirestore(
+                processedImageBase64: imageBase64, // Base64 string olarak kaydet
+                detections: detections // Tespit listesini kaydet
+            );
+
+            if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fotoğraf işlendi ve tutanak bilgileri kaydedildi!')));
+                // Kullanıcıyı Raporlar sayfasına veya ana sayfaya yönlendir
+                Navigator.popUntil(context, (route) => route.isFirst); // Örnek: Ana sayfaya (HomeScreen) kadar tüm sayfaları kapat
+                // Eğer doğrudan raporlar sayfasına gitmek ve o sayfayı yenilemek gerekiyorsa,
+                // HomeScreen'deki currentPage'i 'reports' yapacak bir mekanizma veya
+                // Raporlar sayfasına özel bir rota ile gitmek gerekebilir.
+            }
         } else {
-          throw Exception("Sunucudan işlenmiş fotoğraf (base64) alınamadı.");
+            throw Exception("Sunucudan işlenmiş fotoğraf (base64) alınamadı.");
         }
-      } else {
-        throw Exception("Ubuntu Sunucusundan hata (${response.statusCode}): ${response.reasonPhrase}. Detay: ${response.body}");
-      }
+    } else {
+        // Sunucudan gelen hata mesajını daha iyi göstermek için:
+        String errorMessage = "Ubuntu Sunucusundan hata (${response.statusCode}): ${response.reasonPhrase}.";
+        try {
+            final errorData = json.decode(response.body);
+            if (errorData['error'] != null) {
+                errorMessage += " Detay: ${errorData['error']}";
+                if (errorData['details'] != null) {
+                  errorMessage += " (${errorData['details']})";
+                }
+            }
+        } catch (_) {
+            // JSON parse edilemezse ham body'i ekle
+            errorMessage += " Detay: ${response.body}";
+        }
+        throw Exception(errorMessage);
+    }
     } catch (e, s) {
       print("Ubuntu sunucu ile fotoğraf işleme/kaydetme hatası: $e\n$s");
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Fotoğraf işlenirken/kaydedilirken hata: $e')));
