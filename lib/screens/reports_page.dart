@@ -1,23 +1,22 @@
 // lib/screens/reports_page.dart
-import 'dart:io'; // FilePicker için gerekli olabilir, şimdilik yorumda
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:tutanak/screens/report_detail_page.dart'; // YENİ EKLENDİ
-// import 'pdf_viewer_page.dart'; // Artık ReportDetailPage içinde yönetilecek
-import 'package:flutter_slidable/flutter_slidable.dart';
-// import 'package:file_picker/file_picker.dart'; // PDF yükleme için kalabilir
-// import 'package:firebase_storage/firebase_storage.dart'; // PDF yükleme için kalabilir
+import 'package:intl/intl.dart'; // Tarih formatlama için eklendi
+import 'package:tutanak/screens/report_detail_page.dart';
+// PDF görüntüleyici için pdf_viewer_page.dart importu gerekiyorsa ekleyin
+// import 'pdf_viewer_page.dart';
+// flutter_slidable importu kaldırılabilir, çünkü ExpansionTile ile farklı bir yaklaşım kullanacağız
+// import 'package:flutter_slidable/flutter_slidable.dart';
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({Key? key}) : super(key: key);
 
   static void showAddReportDialog(BuildContext context) {
-    // _ReportsPageState()._showAddReportDialog(context); // PDF ekleme dialogu hala çalışabilir
-    // Veya bu butonu kaldırıp, raporların sadece uygulama akışıyla oluşmasını sağlayabilirsiniz.
-     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Manuel rapor ekleme şimdilik devre dışı.')),
-      );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Manuel rapor ekleme şimdilik devre dışı.')),
+    );
   }
 
   @override
@@ -25,27 +24,49 @@ class ReportsPage extends StatefulWidget {
 }
 
 class _ReportsPageState extends State<ReportsPage> {
+  // Raporun hangi tarihe göre sıralanacağını belirleyen alan adı
+  // Firestore belgenizde 'creatorLastUpdateTimestamp', 'joinerLastUpdateTimestamp',
+  // 'confirmedTimestamp' veya genel bir 'createdAt' gibi bir alan olmalı.
+  // Örnek olarak 'creatorLastUpdateTimestamp' kullanalım.
+  // Eğer bu alan yoksa veya farklı bir isimdeyse, aşağıdaki sorguyu ve
+  // tarih alma kısmını kendi alan adınıza göre güncelleyin.
+  final String _dateFieldForOrdering = 'creatorLastUpdateTimestamp'; // VEYA 'confirmedTimestamp' veya 'createdAt'
+
+  // Tarihi formatlamak için bir yardımcı fonksiyon
+  String _formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null) {
+      return 'Tarih Bilgisi Yok';
+    }
+    // Türkçe lokasyon ile formatlama
+    final DateFormat formatter = DateFormat('dd MMMM yyyy, HH:mm', 'tr_TR');
+    return formatter.format(timestamp.toDate());
+  }
+
   @override
   Widget build(BuildContext context) {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) return const Center(child: Text('Giriş yapılmamış.'));
 
-    // Kullanıcının dahil olduğu (creatorUid veya joinerUid) raporları çek
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
-          .collection('records') // 'records' koleksiyonunu dinle
-          .where(Filter.or( // Kullanıcının ya oluşturan ya da katılan olduğu kayıtları filtrele
-                Filter('creatorUid', isEqualTo: user.uid),
-                Filter('joinerUid', isEqualTo: user.uid)
-            ))
-          // .orderBy('date', descending: true) // 'date' alanı varsa sıralama için kullanın
-          .orderBy(FieldPath.documentId) // Veya ID'ye göre sırala
+          .collection('records')
+          .where(
+            Filter.or(
+              Filter('creatorUid', isEqualTo: user.uid),
+              Filter('joinerUid', isEqualTo: user.uid)
+            )
+          )
+          // Tarihe göre sıralama (en yeni en üstte)
+          // Firestore'da bu alan için bir indeks oluşturmanız gerekebilir.
+          .orderBy(_dateFieldForOrdering, descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Center(child: Text('Hata: ${snapshot.error}'));
+          print("Raporlar sayfasında hata: ${snapshot.error}");
+          print("Hata stack trace: ${snapshot.stackTrace}");
+          return Center(child: Text('Raporlar yüklenirken bir hata oluştu.\nDetay: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(child: Text('Henüz bir tutanak kaydınız bulunmuyor.'));
         } else {
@@ -56,44 +77,98 @@ class _ReportsPageState extends State<ReportsPage> {
               final reportDoc = reports[index];
               final report = reportDoc.data() as Map<String, dynamic>;
               
-              // Rapor başlığı (PDF başlığı veya recordId olabilir)
-              String title = report['title'] ?? "Tutanak: ${reportDoc.id.substring(0,10)}..."; // Firestore'dan gelen PDF başlığı
-              
-              // Rapor tarihi (Firestore'da uygun bir tarih alanı varsa)
-              DateTime? reportDate;
-              // Örneğin 'createdAt', 'lastUpdated_creator', 'lastUpdated_joiner' gibi bir alan varsa:
-              if (report['lastUpdated_creator'] != null) {
-                reportDate = (report['lastUpdated_creator'] as Timestamp).toDate();
-              } else if (report['lastUpdated_joiner'] != null) {
-                 reportDate = (report['lastUpdated_joiner'] as Timestamp).toDate();
+              // Rapor başlığı için tarihi alalım
+              // Örnek olarak creator'ın son güncelleme zamanını veya joiner'ınkini alabiliriz
+              // Ya da 'confirmedTimestamp' gibi genel bir onaylanma zamanı
+              Timestamp? reportTimestamp;
+              if (report.containsKey(_dateFieldForOrdering) && report[_dateFieldForOrdering] is Timestamp) {
+                reportTimestamp = report[_dateFieldForOrdering] as Timestamp?;
+              } else if (report.containsKey('joinerLastUpdateTimestamp') && report['joinerLastUpdateTimestamp'] is Timestamp) {
+                // Fallback olarak joiner'ın zamanını da kontrol edebiliriz
+                reportTimestamp = report['joinerLastUpdateTimestamp'] as Timestamp?;
               }
-              // else if (report['createdAt'] != null) { // Veya oluşturulma tarihi
-              //   reportDate = (report['createdAt'] as Timestamp).toDate();
+              // Veya genel bir 'createdAt' alanı varsa:
+              // else if (report.containsKey('createdAt') && report['createdAt'] is Timestamp) {
+              //   reportTimestamp = report['createdAt'] as Timestamp?;
               // }
 
-              // İşlenmiş fotoğraf var mı kontrolü (basit bir örnek)
+              String title = _formatTimestamp(reportTimestamp);
+              String status = report['status'] as String? ?? "Bilinmiyor";
               bool hasProcessedPhoto = report.containsKey('creatorProcessedDamageImageBase64') ||
                                        report.containsKey('joinerProcessedDamageImageBase64');
-              String status = report['status'] as String? ?? "Bilinmiyor";
 
-
-              return Slidable(
-                key: Key(reportDoc.id),
-                startActionPane: ActionPane(
-                  motion: const DrawerMotion(),
-                  extentRatio: 0.25,
-                  children: [
-                    SlidableAction(
-                      onPressed: (context) async {
-                        // Silme onayı ve işlemi (Bu kısım aynı kalabilir)
-                         bool confirm = await showDialog<bool>(
+              return Card( // Her bir ExpansionTile'ı bir Card içine alarak daha belirgin hale getirebiliriz
+                margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                child: ExpansionTile(
+                  key: PageStorageKey(reportDoc.id), // Scroll pozisyonunu korumak için
+                  leading: Icon(
+                    hasProcessedPhoto ? Icons.image_search_outlined : Icons.description_outlined,
+                    color: hasProcessedPhoto ? Colors.green.shade700 : Colors.blueGrey.shade700,
+                    size: 30,
+                  ),
+                  title: Text(
+                    title, // Başlık olarak formatlanmış tarih
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text("Durum: $status\nTutanak ID: ${reportDoc.id.substring(0,10)}..."), // ID'nin bir kısmını göster
+                  childrenPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      "Tutanak ID: ${reportDoc.id}", // Tam ID'yi burada gösterebiliriz
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    ),
+                    const SizedBox(height: 10),
+                    ListTile(
+                      leading: const Icon(Icons.visibility_outlined, color: Colors.deepPurple),
+                      title: const Text('İşlenmiş Raporu Görüntüle'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReportDetailPage(recordId: reportDoc.id),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.picture_as_pdf_outlined, color: Colors.redAccent),
+                      title: const Text('PDF Raporu Oluştur/Görüntüle'),
+                      onTap: () {
+                        // TODO: PDF oluşturma ve görüntüleme fonksiyonunu buraya ekleyin
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('PDF Raporu özelliği yakında eklenecektir.')),
+                        );
+                        // Örnek: Eğer PDF URL'si Firestore'da saklanıyorsa:
+                        // final String? pdfUrl = report['pdfUrl'] as String?;
+                        // final String? pdfTitle = report['pdfTitle'] as String? ?? "Tutanak PDF";
+                        // if (pdfUrl != null) {
+                        //   Navigator.push(
+                        //     context,
+                        //     MaterialPageRoute(
+                        //       builder: (context) => PdfViewerPage(pdfUrl: pdfUrl, title: pdfTitle),
+                        //     ),
+                        //   );
+                        // } else {
+                        //   ScaffoldMessenger.of(context).showSnackBar(
+                        //     const SnackBar(content: Text('Bu rapor için PDF bulunamadı.')),
+                        //   );
+                        // }
+                      },
+                    ),
+                     // İsteğe bağlı: Silme butonu eklenebilir
+                    ListTile(
+                      leading: Icon(Icons.delete_outline, color: Colors.red.shade700),
+                      title: Text('Bu Tutanağı Sil', style: TextStyle(color: Colors.red.shade700)),
+                      onTap: () async {
+                        bool confirm = await showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
                             title: const Text('Silme Onayı'),
                             content: Text('Bu tutanağı (${reportDoc.id.substring(0,6)}...) silmek istediğinize emin misiniz?'),
                             actions: [
                               TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('İptal')),
-                              TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Sil')),
+                              TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Sil', style: TextStyle(color: Colors.red))),
                             ],
                           ),
                         ) ?? false;
@@ -107,34 +182,8 @@ class _ReportsPageState extends State<ReportsPage> {
                           }
                         }
                       },
-                      backgroundColor: Colors.red,foregroundColor: Colors.white,
-                      icon: Icons.delete, label: 'Sil',
                     ),
                   ],
-                ),
-                child: ListTile(
-                  leading: Icon(
-                    hasProcessedPhoto ? Icons.image_search : Icons.description_outlined, // İşlenmiş fotoğraf varsa farklı ikon
-                    color: hasProcessedPhoto ? Colors.green : Colors.blueGrey,
-                    size: 30,
-                  ),
-                  title: Text(title),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (reportDate != null) Text("Tarih: ${reportDate.day}.${reportDate.month}.${reportDate.year}"),
-                      Text("Durum: $status"),
-                    ],
-                  ),
-                  trailing: const Icon(Icons.arrow_forward_ios),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ReportDetailPage(recordId: reportDoc.id),
-                      ),
-                    );
-                  },
                 ),
               );
             },
@@ -143,7 +192,4 @@ class _ReportsPageState extends State<ReportsPage> {
       },
     );
   }
-
-  // _showAddReportDialog PDF ekleme metodu (isteğe bağlı olarak kalabilir veya kaldırılabilir)
-  // void _showAddReportDialog(BuildContext context) { ... }
 }
