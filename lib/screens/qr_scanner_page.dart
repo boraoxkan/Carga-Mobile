@@ -5,147 +5,201 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'record_confirmation_page.dart';
 
 class QRScannerPage extends StatefulWidget {
-  // isJoining flag'i RecordConfirmationPage'e taşındığı için burada gereksiz olabilir.
-  // final bool isJoining;
   final String joinerVehicleId; // Katılanın kendi seçtiği araç ID'si
 
   const QRScannerPage({
     Key? key,
-    // required this.isJoining, // Kaldırıldı veya isteğe bağlı hale getirilebilir
     required this.joinerVehicleId,
   }) : super(key: key);
 
   @override
-  _QRScannerPageState createState() => _QRScannerPageState();
+  State<QRScannerPage> createState() => _QRScannerPageState();
 }
 
 class _QRScannerPageState extends State<QRScannerPage> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  QRViewController? controller;
-  Barcode? result;
-  bool _isProcessing = false; // Tekrar tekrar yönlendirmeyi önlemek için
+  QRViewController? _controller;
+  Barcode? _result;
+  bool _isProcessing = false;
+  bool _flashOn = false;
 
-  // Hot reload için kamera yaşam döngüsü yönetimi
   @override
   void reassemble() {
     super.reassemble();
-    if (Platform.isAndroid) {
-      controller!.pauseCamera();
+    if (_controller != null) {
+      if (Platform.isAndroid) {
+        _controller!.pauseCamera();
+      }
+      _controller!.resumeCamera();
     }
-    controller!.resumeCamera();
   }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('QR Kodu Tara')),
-      body: Column(
-        children: <Widget>[
-          Expanded(flex: 4, child: _buildQrView(context)),
-          Expanded(
-            flex: 1,
-            child: Center(
-              child: (result != null)
-                  ? Text('Bulunan Kod: ${result!.code}') // Debug için
-                  : const Text('Kamerayı QR koduna doğrultun'),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQrView(BuildContext context) {
-    // Ekran boyutuna göre tarama alanını ayarlama
-    var scanArea = (MediaQuery.of(context).size.width < 400 ||
-            MediaQuery.of(context).size.height < 400)
-        ? 200.0
-        : 300.0;
-    return QRView(
-      key: qrKey,
-      onQRViewCreated: _onQRViewCreated,
-      overlay: QrScannerOverlayShape(
-          borderColor: Colors.red,
-          borderRadius: 10,
-          borderLength: 30,
-          borderWidth: 10,
-          cutOutSize: scanArea),
-      onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
-    );
-  }
-
 
   void _onQRViewCreated(QRViewController controller) {
     setState(() {
-      this.controller = controller;
+      _controller = controller;
     });
-    controller.scannedDataStream.listen((scanData) {
-      // Eğer zaten bir işlem yapılıyorsa veya kod geçerli değilse dinlemeyi bırak
-      if (_isProcessing || scanData.code == null) return;
+    _controller!.scannedDataStream.listen((scanData) {
+      if (_isProcessing || scanData.code == null || scanData.code!.isEmpty) return;
 
-       setState(() {
-         _isProcessing = true; // İşleme başla
-         result = scanData; // Sonucu göster (opsiyonel)
-       });
+      setState(() {
+        _isProcessing = true;
+        _result = scanData; // Sonucu anlık göstermek için (opsiyonel)
+      });
 
-      controller.pauseCamera(); // Kamerayı duraklat
+      _controller!.pauseCamera(); // Kamerayı duraklat
 
       final qrData = scanData.code!;
-      print("Okunan QR Verisi: $qrData"); // Debug için
+      print("Okunan QR Verisi (QRScannerPage): $qrData");
 
-      // QR verisinin formatını basitçe kontrol et
-      if (!qrData.contains('|')) {
-         print("Geçersiz QR formatı!");
-         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Okunan QR kodu geçersiz formatta.")),
-         );
-         // Kamerayı tekrar başlat ve işlemi bitir
-         controller.resumeCamera();
-         setState(() {
-            _isProcessing = false;
-            result = null;
-         });
-         return; // Fonksiyondan çık
-      }
-
-
-      // pushReplacement yerine push kullanmak daha iyi olabilir
-      // Kullanıcı geri dönebilmeli
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => RecordConfirmationPage(
-            // isJoining: widget.isJoining, // Bu bilgi RecordConfirmationPage içinde belirlenebilir veya gereksizse kaldırılabilir.
-            qrData: qrData, // Okunan ham veri: creatorUid|creatorVehicleId
-            joinerVehicleId: widget.joinerVehicleId, // Katılanın seçtiği araç ID'si
-          ),
-        ),
-      ).then((_) {
-         // RecordConfirmationPage kapatıldıktan sonra burası çalışır.
-         // Kamerayı tekrar aktifleştir ve işlem durumunu sıfırla.
-          print("Confirmation page kapatıldı, kamera devam ettiriliyor.");
-          controller.resumeCamera();
+      // QR verisinin formatını basitçe kontrol et (UID|VehicleID)
+      final parts = qrData.split('|');
+      if (parts.length != 2 || parts[0].isEmpty || parts[1].isEmpty) {
+        print("Geçersiz QR formatı!");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Okunan QR kodu geçersiz veya beklenen formatta değil.")),
+          );
+          // Kamerayı tekrar başlat ve işlemi bitir
+          _controller?.resumeCamera();
           setState(() {
             _isProcessing = false;
-            result = null;
+            _result = null;
           });
-      });
+        }
+        return;
+      }
+
+      // Geçerli QR kodu okundu, onay sayfasına yönlendir
+      if (mounted) {
+        // Kısa bir gecikme ile "okundu" mesajı gösterilebilir
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('QR Kod Okundu: ${qrData.substring(0, min(qrData.length, 10))}... Yönlendiriliyor.')),
+        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RecordConfirmationPage(
+              qrData: qrData,
+              joinerVehicleId: widget.joinerVehicleId,
+            ),
+          ),
+        ).then((_) {
+          // RecordConfirmationPage kapatıldıktan sonra burası çalışır.
+          // Kamerayı tekrar aktifleştir ve işlem durumunu sıfırla.
+          if (mounted) {
+            print("Confirmation page kapatıldı, kamera devam ettiriliyor.");
+            _controller?.resumeCamera();
+            setState(() {
+              _isProcessing = false;
+              _result = null;
+            });
+          }
+        });
+      }
     });
   }
 
   void _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
     print('${DateTime.now().toIso8601String()}_onPermissionSet $p');
-    if (!p) {
+    if (!p && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kamera izni verilmedi')),
+        const SnackBar(content: Text('Kamera izni verilmedi. QR kod okutmak için izin vermelisiniz.')),
       );
+      // Kullanıcıyı uygulama ayarlarına yönlendirme butonu eklenebilir.
     }
   }
 
   @override
   void dispose() {
-    controller?.dispose();
+    _controller?.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    var scanArea = (MediaQuery.of(context).size.width < 400 ||
+            MediaQuery.of(context).size.height < 400)
+        ? 200.0
+        : 280.0; // Tarama alanını biraz büyüttüm
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('QR Kodu Tara'),
+        actions: [
+          IconButton(
+            icon: Icon(_flashOn ? Icons.flash_on_rounded : Icons.flash_off_rounded),
+            tooltip: "Flaş ${_flashOn ? 'Kapat' : 'Aç'}",
+            onPressed: () async {
+              await _controller?.toggleFlash();
+              setState(() {
+                _flashOn = !_flashOn;
+              });
+            },
+          ),
+          // Kamera değiştirme butonu (genellikle arka kamera yeterli olur)
+          // IconButton(
+          //   icon: Icon(Icons.flip_camera_ios_outlined),
+          //   tooltip: "Kamera Değiştir",
+          //   onPressed: () async {
+          //     await _controller?.flipCamera();
+          //     // Hangi kameranın aktif olduğunu takip etmek için ek state gerekebilir.
+          //   },
+          // ),
+        ],
+      ),
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            flex: 5, // Kamera görüntüsüne daha fazla alan
+            child: QRView(
+              key: qrKey,
+              onQRViewCreated: _onQRViewCreated,
+              overlay: QrScannerOverlayShape(
+                borderColor: theme.colorScheme.primary, // Tema rengi
+                borderRadius: 12, // Daha yuvarlak köşeler
+                borderLength: 30,
+                borderWidth: 8, // Daha belirgin kenarlık
+                cutOutSize: scanArea,
+                // cutOutBottomOffset: 50, // Tarama alanını biraz yukarı kaydırmak için
+              ),
+              onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
+            ),
+          ),
+          Expanded(
+            flex: 1, // Alt bilgi alanına daha az alan
+            child: Container(
+              color: Colors.black.withOpacity(0.03), // Hafif bir arka plan
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.center_focus_weak, size: 30, color: theme.colorScheme.onSurfaceVariant),
+                      const SizedBox(height: 8),
+                      Text(
+                        _isProcessing ? 'QR Kod İşleniyor...' : 'Kamerayı QR koduna doğrultun',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      // if (_result != null && !_isProcessing) // Debug için okunan kodu göstermek isterseniz
+                      //   Padding(
+                      //     padding: const EdgeInsets.only(top: 8.0),
+                      //     child: Text(
+                      //       'Bulunan Kod: ${_result!.code?.substring(0, (_result!.code?.length ?? 0) > 10 ? 10 : _result!.code?.length ?? 0)}...',
+                      //       style: theme.textTheme.bodySmall,
+                      //       overflow: TextOverflow.ellipsis,
+                      //     ),
+                      //   ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
   }
 }

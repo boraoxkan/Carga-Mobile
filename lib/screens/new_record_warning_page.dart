@@ -9,82 +9,131 @@ class NewRecordWarningPage extends StatelessWidget {
 
   Future<void> _call112(BuildContext context) async {
     final Uri launchUri = Uri(scheme: 'tel', path: '112');
-    if (await canLaunchUrl(launchUri)) {
+    // canLaunchUrl yerine launchUrl doğrudan kullanılabilir, hata durumunda exception fırlatır.
+    try {
       bool? confirmed = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("112 Acil Yardımı"),
-          content: const Text("112'yi aramak ister misiniz?"),
+        builder: (BuildContext dialogContext) => AlertDialog(
+          title: const Text("112 Acil Yardım Çağrısı"),
+          content: const Text("112 Acil Yardım'ı aramak istediğinize emin misiniz?"),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text("İptal"),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text("Ara"),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text("Ara", style: TextStyle(color: Theme.of(context).colorScheme.error)),
             ),
           ],
         ),
       );
-      if (confirmed ?? false) {
-        await launchUrl(launchUri);
+      if (confirmed == true) { // Explicitly check for true
+        if (await canLaunchUrl(launchUri)) { // Güvenlik için canLaunchUrl kontrolü kalsın
+            await launchUrl(launchUri);
+        } else {
+            if (context.mounted) {
+                 ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Arama başlatılamadı: ${launchUri.toString()}")),
+                );
+            }
+        }
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Telefon araması yapılamıyor.")),
-      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Telefon araması yapılırken hata oluştu: $e")),
+        );
+      }
     }
+  }
+
+  Widget _buildWarningItem(BuildContext context, String text) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.check_circle_outline, size: 20, color: theme.colorScheme.primary.withOpacity(0.8)),
+          const SizedBox(width: 12),
+          Expanded(child: Text(text, style: theme.textTheme.bodyMedium)),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Yeni Tutanak Oluştur"),
+        title: Text(isJoining ? "Tutanağa Dahil Ol" : "Yeni Tutanak Oluştur"),
+        // elevation: 0, // Tema'dan gelecek
+        // backgroundColor: Colors.transparent, // Tema'dan gelecek
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.yellow.shade100,
-                border: Border.all(color: Colors.orange),
-                borderRadius: BorderRadius.circular(8),
+            Card(
+              elevation: 0, // Daha modern, gölgesiz bir görünüm için veya temadan gelen değeri kullan
+              color: theme.colorScheme.surfaceVariant.withOpacity(0.5), // Hafif farklı bir arka plan
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                // side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.5)) // İsteğe bağlı kenarlık
               ),
-              child: Column(
-                children: [
-                  const Text(
-                    "KVKK kapsamında:\n"
-                    "• Alkol veya uyuşturucu kullanımı yok ise\n"
-                    "• Ölüm/yaralanma bulunmuyor ise\n"
-                    "Trafik sigortanız bulunuyor ise\n"
-                    "• Araç kamu kurum ve kuruluşlarına ait değil ise\n"
-                    "• Kamu malına veya 3. kişiye zarar verilmemiş ise\n"
-                    "Araç sayısı 1'den fazla ise\n"
-                    "• Sürücü belgeniz var ve araç cinsine uygun ise",
-                    style: TextStyle(fontSize: 16, color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => _call112(context),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    Icon(Icons.gavel_rounded, size: 60, color: theme.colorScheme.primary),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Kaza Tespit Tutanağı Şartları",
+                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
                     ),
-                    child: const Text("112 Acil Yardımı Ara"),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      "Aşağıdaki durumlar sizin için geçerliyse ve karşı tarafla anlaştıysanız, polis çağırmadan anlaşmalı kaza tespit tutanağı düzenleyebilirsiniz:",
+                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildWarningItem(context, "Alkol veya uyuşturucu madde etkisi altında değilseniz,"),
+                    _buildWarningItem(context, "Kazada ölüm veya yaralanma durumu yoksa,"),
+                    _buildWarningItem(context, "Geçerli trafik sigortanız bulunuyorsa,"),
+                    _buildWarningItem(context, "Araçlar kamu kurum ve kuruluşlarına ait değilse,"),
+                    _buildWarningItem(context, "Kamu malına veya 3. kişilere zarar verilmemişse,"),
+                    _buildWarningItem(context, "Kazaya karışan araç sayısı birden fazlaysa (karşılıklı anlaşma için),"),
+                    _buildWarningItem(context, "Sürücü belgeniz geçerli ve kullandığınız araç türüne uygunsa,"),
+                    const SizedBox(height: 24),
+                    Text(
+                      "Yukarıdaki şartlar sağlanmıyorsa veya anlaşmazlık varsa, lütfen trafik polisini (155) veya jandarmayı (156) arayın. Yaralanma durumunda ise 112 Acil Yardımı arayın.",
+                      style: theme.textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic, color: theme.colorScheme.onSurfaceVariant),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.call_outlined),
+                      label: const Text("112 Acil Yardımı Ara"),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 48),
+                        foregroundColor: theme.colorScheme.error,
+                        side: BorderSide(color: theme.colorScheme.error.withOpacity(0.7)),
+                      ),
+                      onPressed: () => _call112(context),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                // “Şartları Sağlıyorum” butonuna tıklandığında flow tipini koruyarak DriverAndVehicleInfoPage'e yönlendiriyoruz.
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -93,10 +142,16 @@ class NewRecordWarningPage extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50), // Tema'dan gelecek
+                padding: const EdgeInsets.symmetric(vertical: 16)
               ),
-              child: const Text("Şartları Sağlıyorum"),
+              child: Text(isJoining ? "Şartları Anladım, Devam Et" : "Şartları Sağlıyorum, Devam Et"),
             ),
+            const SizedBox(height: 16),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("Geri Dön", style: TextStyle(color: theme.colorScheme.primary))
+            )
           ],
         ),
       ),
