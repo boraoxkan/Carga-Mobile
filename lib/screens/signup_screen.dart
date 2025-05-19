@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tutanak/models/user.dart'; // register fonksiyonunun bulunduğu dosya
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({Key? key}) : super(key: key);
@@ -22,7 +24,15 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
-  // E-mail doğrulaması
+  // YENİ EKLENEN CONTROLLER'LAR
+  final TextEditingController driverLicenseNoController = TextEditingController();
+  final TextEditingController driverLicenseClassController = TextEditingController();
+  final TextEditingController driverLicenseIssuePlaceController = TextEditingController();
+  final TextEditingController addressController = TextEditingController(); // Sürücü Adresi
+
+  // ... (validateEmail, validatePassword, validateConfirmPassword, _inputDecoration metotları aynı kalabilir) ...
+  // _inputDecoration fonksiyonu zaten genel amaçlı, yeni alanlar için de kullanılabilir.
+
   String? validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Boş bırakıldı';
@@ -37,6 +47,9 @@ class _SignupScreenState extends State<SignupScreen> {
     if (value == null || value.trim().isEmpty) {
       return 'Boş bırakıldı';
     }
+    if (value.length < 6) {
+        return 'Şifre en az 6 karakter olmalıdır.';
+    }
     return null;
   }
 
@@ -50,29 +63,12 @@ class _SignupScreenState extends State<SignupScreen> {
     return null;
   }
 
-  // Oval kenarlı input dekorasyonu sağlayan fonksiyon
-  InputDecoration _inputDecoration(String labelText) {
+  InputDecoration _inputDecoration(String labelText, {IconData? prefixIcon}) {
+    final theme = Theme.of(context);
     return InputDecoration(
       labelText: labelText,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.grey),
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.purple),
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.red),
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.red, width: 2),
-        borderRadius: BorderRadius.circular(20.0),
-      ),
+      prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: theme.colorScheme.primary) : null,
+      // Diğer inputDecoration stil ayarları (main.dart'tan geliyor veya burada override edilebilir)
     );
   }
 
@@ -88,102 +84,182 @@ class _SignupScreenState extends State<SignupScreen> {
           key: _formKey,
           child: Column(
             children: [
-              // İsim
               TextFormField(
                 controller: nameController,
-                decoration: _inputDecoration('İsim'),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Boş bırakıldı';
-                  }
-                  return null;
-                },
+                decoration: _inputDecoration('İsim', prefixIcon: Icons.person_outline),
+                validator: (value) => (value == null || value.trim().isEmpty) ? 'Boş bırakıldı' : null,
               ),
               SizedBox(height: 16),
-              // Soyisim
               TextFormField(
                 controller: surnameController,
-                decoration: _inputDecoration('Soyisim'),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Boş bırakıldı';
-                  }
-                  return null;
-                },
+                decoration: _inputDecoration('Soyisim', prefixIcon: Icons.person_outline),
+                validator: (value) => (value == null || value.trim().isEmpty) ? 'Boş bırakıldı' : null,
               ),
               SizedBox(height: 16),
-              // TC No (sadece rakam)
               TextFormField(
                 controller: tcNoController,
-                decoration: _inputDecoration('TC No'),
+                decoration: _inputDecoration('TC Kimlik Numarası', prefixIcon: Icons.badge_outlined),
                 keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(11)],
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Boş bırakıldı';
-                  }
+                  if (value == null || value.trim().isEmpty) return 'Boş bırakıldı';
+                  if (value.length != 11) return 'TC Kimlik No 11 haneli olmalıdır.';
                   return null;
                 },
               ),
               SizedBox(height: 16),
-              // Telefon No (sadece rakam)
               TextFormField(
                 controller: phoneController,
-                decoration: _inputDecoration('Telefon No'),
+                decoration: _inputDecoration('Telefon Numarası (5xxxxxxxxx)', prefixIcon: Icons.phone_outlined),
                 keyboardType: TextInputType.phone,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Boş bırakıldı';
-                  }
-                  return null;
-                },
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
+                 validator: (value) {
+                    if (value == null || value.trim().isEmpty) return 'Boş bırakıldı';
+                    if (value.length != 10) return 'Telefon numarası 10 haneli olmalıdır (başında 0 olmadan).';
+                    return null;
+                }
               ),
               SizedBox(height: 16),
-              // E-mail
               TextFormField(
                 controller: emailController,
-                decoration: _inputDecoration('E-mail'),
+                decoration: _inputDecoration('E-posta Adresi', prefixIcon: Icons.email_outlined),
                 keyboardType: TextInputType.emailAddress,
                 validator: validateEmail,
               ),
               SizedBox(height: 16),
-              // Şifre
               TextFormField(
                 controller: passwordController,
-                decoration: _inputDecoration('Şifre'),
+                decoration: _inputDecoration('Şifre', prefixIcon: Icons.lock_outline),
                 obscureText: true,
                 validator: validatePassword,
               ),
               SizedBox(height: 16),
-              // Şifre Tekrar
               TextFormField(
                 controller: confirmPasswordController,
-                decoration: _inputDecoration('Şifre Tekrar'),
+                decoration: _inputDecoration('Şifre Tekrar', prefixIcon: Icons.lock_outline),
                 obscureText: true,
                 validator: validateConfirmPassword,
+              ),
+              SizedBox(height: 20),
+              Divider(),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: Text("Sürücü ve Adres Bilgileri (Opsiyonel)", style: Theme.of(context).textTheme.titleMedium),
+              ),
+              TextFormField(
+                controller: driverLicenseNoController,
+                decoration: _inputDecoration('Sürücü Belge No', prefixIcon: Icons.card_membership_outlined),
+                // validator: (value) => (value == null || value.trim().isEmpty) ? 'Boş bırakıldı' : null, // Opsiyonel olduğu için validator kaldırıldı veya yumuşatıldı
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: driverLicenseClassController,
+                decoration: _inputDecoration('Sürücü Belge Sınıfı (örn: B)', prefixIcon: Icons.category_outlined),
+                textCapitalization: TextCapitalization.characters,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: driverLicenseIssuePlaceController,
+                decoration: _inputDecoration('Sürücü Belgesi Verildiği Yer (İl/İlçe)', prefixIcon: Icons.location_city_outlined),
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: addressController,
+                decoration: _inputDecoration('Adresiniz', prefixIcon: Icons.home_outlined),
+                keyboardType: TextInputType.multiline,
+                maxLines: 3,
+                minLines: 1,
               ),
               SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
-                  // register fonksiyonunu import ettiğiniz dosyadan çağırıyoruz.
-                  register(
-                    emailController.text,
-                    passwordController.text,
-                    nameController.text,
-                    surnameController.text,
-                    tcNoController.text,
-                    phoneController.text,
-                    _formKey,
-                    context,
-                  );
+                  if (_formKey.currentState!.validate()) {
+                    // register fonksiyonunu güncellemeniz gerekecek
+                    // Bu yeni alanları da parametre olarak almalı ve Firestore'a kaydetmeli
+                    registerWithAdditionalInfo( // Yeni bir register fonksiyonu veya mevcut olanı güncelle
+                      context,
+                      _formKey,
+                      emailController.text.trim(),
+                      passwordController.text.trim(),
+                      nameController.text.trim(),
+                      surnameController.text.trim(),
+                      tcNoController.text.trim(),
+                      phoneController.text.trim(),
+                      driverLicenseNoController.text.trim(),
+                      driverLicenseClassController.text.trim(),
+                      driverLicenseIssuePlaceController.text.trim(),
+                      addressController.text.trim(),
+                    );
+                  }
                 },
                 child: Text('Kayıt Ol'),
+                style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+// lib/models/user.dart dosyasına veya yeni bir auth_service.dart dosyasına eklenebilir:
+Future<void> registerWithAdditionalInfo(
+  BuildContext context,
+  GlobalKey<FormState> formKey,
+  String email,
+  String password,
+  String name,
+  String surname,
+  String tcNo,
+  String phone,
+  String driverLicenseNo,
+  String driverLicenseClass,
+  String driverLicenseIssuePlace,
+  String address,
+) async {
+  // _isLoading state'i eklenebilir
+  try {
+    UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+      'isim': name,
+      'soyisim': surname,
+      'tcNo': tcNo,
+      'telefon': phone,
+      'email': email,
+      'driverLicenseNo': driverLicenseNo.isNotEmpty ? driverLicenseNo : null,
+      'driverLicenseClass': driverLicenseClass.isNotEmpty ? driverLicenseClass : null,
+      'driverLicenseIssuePlace': driverLicenseIssuePlace.isNotEmpty ? driverLicenseIssuePlace : null,
+      'address': address.isNotEmpty ? address : null,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    
+    if (context.mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  } on FirebaseAuthException catch (e) {
+    String message = 'Bir hata oluştu';
+    if (e.code == 'weak-password') {
+      message = 'Şifre çok zayıf.';
+    } else if (e.code == 'email-already-in-use') {
+      message = 'Bu e-posta ile zaten kayıt var.';
+    }
+    if(context.mounted){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Theme.of(context).colorScheme.error),
+      );
+    }
+  } catch (e) {
+    if(context.mounted){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Bir hata oluştu: $e'), backgroundColor: Theme.of(context).colorScheme.error),
+      );
+    }
+  } finally {
+    // _isLoading = false; (eğer state'li bir widget içindeyseniz)
   }
 }

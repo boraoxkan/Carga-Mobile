@@ -10,6 +10,8 @@
     <string>Uygulama, kaza yerini seçebilmeniz için konumunuza erişmek ister.</string>
     <key>NSLocationAlwaysUsageDescription</key>
     <string>Uygulama, arka planda da konumunuzu izleyerek kaza raporunu doğru konumda kaydedebilir.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Tutanağa dahil olmak için diğer sürücünün QR kodunu taramanız ve hasar fotoğraflarını çekmeniz için kamera erişimi gereklidir.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

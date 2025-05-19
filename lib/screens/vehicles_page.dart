@@ -5,28 +5,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter/services.dart'; // FilteringTextInputFormatter için
 import 'package:tutanak/services/car_service.dart'; // CarService importu
-// CupertinoPickerDialog yerine Material Dropdown kullanacağız
-// import '../widgets/cupertino_picker_dialog.dart';
+import 'package:intl/intl.dart'; // DateFormat için eklendi
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'vehicle_details_page.dart';
 
 class VehiclesPage extends StatefulWidget {
   const VehiclesPage({Key? key}) : super(key: key);
 
-  // showAddVehicleDialog'u static yapmak yerine, HomeScreen'den çağrıldığında
-  // bir GlobalKey<VehiclesPageState> üzerinden erişmek daha iyi bir pratik olabilir
-  // ya da bu metodu bir helper sınıfına taşımak.
-  // Şimdilik mevcut static yapıyı koruyarak içini güncelleyeceğiz.
   static void showAddVehicleDialog(BuildContext context) {
-    // Bu static metodun doğrudan state'e erişimi olmadığı için,
-    // dialog gösterme işlevini VehiclesPage widget'ının state'ine taşıyıp,
-    // FAB tıklandığında o state üzerinden çağırmak daha doğru olur.
-    // Alternatif olarak, VehiclesPage'e bir GlobalKey verip HomeScreen'den
-    // bu key üzerinden state'e ulaşıp metodu çağırabiliriz.
-    // Şimdilik en basit haliyle, dialog'un stateful olmasını sağlayacak şekilde güncelleyelim.
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return _AddVehicleDialog(); // Ayrı bir StatefulWidget olarak tanımladık
+        return _AddVehicleDialog();
       },
     );
   }
@@ -55,6 +45,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
           .collection('users')
           .doc(user.uid)
           .collection('vehicles')
+          .orderBy('createdAt', descending: true) // createdAt alanına göre sırala
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -88,7 +79,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
         } else {
           final vehicles = snapshot.data!.docs;
           return ListView.builder(
-            padding: const EdgeInsets.all(8.0), // Liste için genel padding
+            padding: const EdgeInsets.all(8.0),
             itemCount: vehicles.length,
             itemBuilder: (context, index) {
               final doc = vehicles[index];
@@ -99,7 +90,6 @@ class _VehiclesPageState extends State<VehiclesPage> {
               final String plaka = vehicleData['plaka'] ?? 'Plakasız';
 
               return Card(
-                // Card stili tema'dan gelecek
                 margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
                 child: Slidable(
                   key: Key(doc.id),
@@ -109,10 +99,9 @@ class _VehiclesPageState extends State<VehiclesPage> {
                     children: [
                       SlidableAction(
                         onPressed: (context) async {
-                          // Silme onayı ve işlemi (öncekiyle aynı)
                            bool confirm = await showDialog<bool>(
                             context: context,
-                            builder: (BuildContext dialogContext) { // Dialog context'i
+                            builder: (BuildContext dialogContext) {
                               return AlertDialog(
                                 title: const Text('Silme Onayı'),
                                 content: Text('"${marka} ${seri} (${plaka})" aracını silmek istediğinize emin misiniz?'),
@@ -132,6 +121,18 @@ class _VehiclesPageState extends State<VehiclesPage> {
 
                           if (confirm) {
                             try {
+                              // Araçla ilişkili fotoğrafları Firebase Storage'dan sil
+                              if (vehicleData['photos'] != null && vehicleData['photos'] is List) {
+                                for (String photoUrl in List<String>.from(vehicleData['photos'])) {
+                                  try {
+                                    await firebase_storage.FirebaseStorage.instance.refFromURL(photoUrl).delete();
+                                  } catch (e) {
+                                    print("Storage'dan fotoğraf silinirken hata ($photoUrl): $e");
+                                    // Hata olsa bile Firestore'dan silme işlemine devam et
+                                  }
+                                }
+                              }
+                              // Firestore'dan araç belgesini sil
                               await FirebaseFirestore.instance
                                   .collection('users')
                                   .doc(user.uid)
@@ -140,13 +141,13 @@ class _VehiclesPageState extends State<VehiclesPage> {
                                   .delete();
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Araç (${plaka}) silindi.')),
+                                  SnackBar(content: Text('Araç (${plaka}) ve ilişkili fotoğrafları silindi.')),
                                 );
                               }
                             } catch (e) {
                                if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Silme hatası: $e')),
+                                  SnackBar(content: Text('Araç silinirken genel hata: $e')),
                                 );
                               }
                             }
@@ -156,13 +157,13 @@ class _VehiclesPageState extends State<VehiclesPage> {
                         foregroundColor: theme.colorScheme.onErrorContainer,
                         icon: Icons.delete_outline,
                         label: 'Sil',
-                        borderRadius: BorderRadius.circular(12), // Card ile uyumlu
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ],
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-                    leading: CircleAvatar( // İkon yerine daha şık bir avatar
+                    leading: CircleAvatar(
                       backgroundColor: theme.colorScheme.primaryContainer,
                       foregroundColor: theme.colorScheme.onPrimaryContainer,
                       child: const Icon(Icons.directions_car_filled_outlined),
@@ -175,7 +176,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
                       '$model\nPlaka: $plaka',
                       style: theme.textTheme.bodyMedium,
                     ),
-                    isThreeLine: true, // Subtitle'da iki satır varsa
+                    isThreeLine: true,
                     trailing: IconButton(
                       icon: Icon(Icons.arrow_forward_ios_rounded, color: theme.colorScheme.secondary),
                       tooltip: "Detayları Gör",
@@ -191,7 +192,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
                         );
                       },
                     ),
-                    onTap: () { // ListTile'a tıklanınca da detaylara git
+                    onTap: () {
                        Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -226,7 +227,7 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
   List<String> _brands = [];
   List<String> _series = [];
   List<String> _models = [];
-  final List<String> _usageOptions = ['Bireysel', 'Ticari'];
+  final List<String> _usageOptions = ['Bireysel', 'Ticari', 'Resmi', 'Diğer']; // Kullanım şekilleri güncellendi
 
   String? _selectedBrand;
   String? _selectedSeries;
@@ -236,9 +237,25 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
   bool _isLoadingBrands = true;
   bool _isLoadingSeries = false;
   bool _isLoadingModels = false;
+  bool _isSaving = false; // Kaydetme işlemi için
 
   final TextEditingController _yearController = TextEditingController();
   final TextEditingController _plateController = TextEditingController();
+  final TextEditingController _chassisNoController = TextEditingController(); // Şasi No
+  final TextEditingController _policyHolderNameController = TextEditingController(); // Sigortalı Adı Soyadı
+  final TextEditingController _policyHolderIdController = TextEditingController(); // Sigortalı TC/Vergi No
+  final TextEditingController _insuranceCompanyController = TextEditingController(); // Sigorta Şirketi
+  final TextEditingController _agencyNoController = TextEditingController(); // Acente No
+  final TextEditingController _policyNoController = TextEditingController(); // Poliçe No
+  final TextEditingController _tramerNoController = TextEditingController(); // TRAMER Belge No
+  DateTime? _policyStartDate; // Poliçe Başlangıç Tarihi
+  DateTime? _policyEndDate; // Poliçe Bitiş Tarihi
+
+  // Yeşil Kart bilgileri için controller'lar (opsiyonel)
+  final TextEditingController _greenCardNoController = TextEditingController();
+  final TextEditingController _greenCardCountryController = TextEditingController();
+  final TextEditingController _greenCardPassportNoController = TextEditingController();
+  bool _hasGreenCard = false; // Yeşil Kart var mı?
 
   @override
   void initState() {
@@ -289,49 +306,114 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
     if (mounted) setState(() => _isLoadingModels = false);
   }
 
+  Future<void> _selectDate(BuildContext context, bool isStartDate) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: (isStartDate ? _policyStartDate : _policyEndDate) ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+      helpText: isStartDate ? 'Poliçe Başlangıç Tarihi' : 'Poliçe Bitiş Tarihi',
+      confirmText: 'TAMAM',
+      cancelText: 'İPTAL',
+      locale: const Locale('tr', 'TR'), // Tarih seçiciyi Türkçe yapmak için
+    );
+    if (picked != null && mounted) {
+      setState(() {
+        if (isStartDate) {
+          _policyStartDate = picked;
+          // Başlangıç tarihi, bitiş tarihinden sonra olamaz
+          if (_policyEndDate != null && _policyStartDate!.isAfter(_policyEndDate!)) {
+            _policyEndDate = null; // Bitiş tarihini sıfırla veya başlangıç tarihine ayarla
+          }
+        } else {
+          _policyEndDate = picked;
+           // Bitiş tarihi, başlangıç tarihinden önce olamaz
+          if (_policyStartDate != null && _policyEndDate!.isBefore(_policyStartDate!)) {
+            _policyStartDate = null; // Başlangıç tarihini sıfırla veya bitiş tarihine ayarla
+             ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Bitiş tarihi başlangıç tarihinden önce olamaz. Lütfen başlangıç tarihini de kontrol edin.')),
+            );
+          }
+        }
+      });
+    }
+  }
+
+
   Future<void> _saveVehicle() async {
     if (_vehicleFormKey.currentState!.validate()) {
       if (_selectedBrand == null || _selectedSeries == null || _selectedModel == null || _selectedUsage == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Lütfen tüm seçimleri yapınız.')),
+          const SnackBar(content: Text('Lütfen Marka, Seri, Model ve Kullanım Şekli seçimlerini yapınız.')),
         );
         return;
       }
+      if(mounted) setState(() => _isSaving = true);
       try {
         User? user = FirebaseAuth.instance.currentUser;
         if (user != null) {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .collection('vehicles')
-              .add({
+          Map<String, dynamic> vehicleData = {
             'marka': _selectedBrand,
             'seri': _selectedSeries,
             'model': _selectedModel,
             'modelYili': _yearController.text.trim(),
             'kullanim': _selectedUsage,
-            'plaka': _plateController.text.trim().toUpperCase(), // Plakayı büyük harfe çevir
-            'createdAt': FieldValue.serverTimestamp(), // Oluşturulma tarihi
-            'photos': [], // Başlangıçta boş fotoğraf listesi
-          });
-          Navigator.pop(context); // Dialogu kapat
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Araç başarıyla eklendi.')),
-          );
+            'plaka': _plateController.text.trim().toUpperCase(),
+            'sasiNo': _chassisNoController.text.trim().toUpperCase(),
+            'sigortaliAdiSoyadi': _policyHolderNameController.text.trim(),
+            'sigortaliTcVergiNo': _policyHolderIdController.text.trim(),
+            'sigortaSirketi': _insuranceCompanyController.text.trim(),
+            'acenteNo': _agencyNoController.text.trim(),
+            'policeNo': _policyNoController.text.trim(),
+            'tramerBelgeNo': _tramerNoController.text.trim(),
+            'policeBaslangicTarihi': _policyStartDate != null ? Timestamp.fromDate(_policyStartDate!) : null,
+            'policeBitisTarihi': _policyEndDate != null ? Timestamp.fromDate(_policyEndDate!) : null,
+            'yesilKartVar': _hasGreenCard,
+            'yesilKartNo': _hasGreenCard ? _greenCardNoController.text.trim() : null,
+            'yesilKartUlke': _hasGreenCard ? _greenCardCountryController.text.trim() : null,
+            'yesilKartPasaportNo': _hasGreenCard ? _greenCardPassportNoController.text.trim() : null,
+            'createdAt': FieldValue.serverTimestamp(),
+            'photos': [],
+          };
+
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .collection('vehicles')
+              .add(vehicleData);
+
+          if(mounted) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Araç başarıyla eklendi.')),
+            );
+          }
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Araç eklenirken hata oluştu: $e')),
-        );
+        if(mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Araç eklenirken hata oluştu: $e')),
+          );
+        }
+      } finally {
+        if(mounted) setState(() => _isSaving = false);
       }
     }
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20.0, bottom: 8.0),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Input stilleri tema'dan gelecek (main.dart'ta tanımlı)
-    // final inputDecoration = theme.inputDecorationTheme;
 
     return AlertDialog(
       title: const Text('Yeni Araç Ekle'),
@@ -342,7 +424,8 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Marka Seçimi
+              _buildSectionTitle("Temel Araç Bilgileri"),
+              // Marka, Seri, Model, Yıl, Kullanım, Plaka, Şasi No
               _isLoadingBrands
                   ? const Center(child: CircularProgressIndicator())
                   : DropdownButtonFormField<String>(
@@ -362,8 +445,6 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
                       validator: (value) => value == null ? 'Marka seçimi zorunludur' : null,
                     ),
               const SizedBox(height: 16),
-
-              // Seri Seçimi
               if (_selectedBrand != null)
                 _isLoadingSeries
                     ? const Center(child: Padding(padding: EdgeInsets.all(8.0), child: CircularProgressIndicator()))
@@ -384,8 +465,6 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
                         validator: (value) => _series.isNotEmpty && value == null ? 'Seri seçimi zorunludur' : null,
                       ),
               if (_selectedBrand != null) const SizedBox(height: 16),
-
-              // Model Seçimi
               if (_selectedBrand != null && _selectedSeries != null)
                 _isLoadingModels
                     ? const Center(child: Padding(padding: EdgeInsets.all(8.0), child: CircularProgressIndicator()))
@@ -405,8 +484,6 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
                         validator: (value) => _models.isNotEmpty && value == null ? 'Model seçimi zorunludur' : null,
                       ),
               if (_selectedBrand != null && _selectedSeries != null) const SizedBox(height: 16),
-
-              // Model Yılı
               TextFormField(
                 controller: _yearController,
                 decoration: const InputDecoration(labelText: 'Model Yılı', prefixIcon: Icon(Icons.calendar_today_outlined)),
@@ -415,7 +492,6 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return 'Lütfen model yılı giriniz';
                   if (value.length != 4) return 'Model yılı 4 haneli olmalıdır';
-                  // İsteğe bağlı: Yılın geçerli bir aralıkta olup olmadığını kontrol et
                   int? year = int.tryParse(value);
                   if (year == null || year < 1900 || year > DateTime.now().year + 1) {
                      return 'Geçerli bir yıl giriniz';
@@ -424,8 +500,6 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // Kullanım Şekli
               DropdownButtonFormField<String>(
                 decoration: const InputDecoration(labelText: 'Kullanım Şekli', prefixIcon: Icon(Icons.work_outline)),
                 value: _selectedUsage,
@@ -442,30 +516,107 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
                 validator: (value) => value == null ? 'Kullanım şekli seçimi zorunludur' : null,
               ),
               const SizedBox(height: 16),
-
-              // Plaka Numarası
               TextFormField(
                 controller: _plateController,
                 decoration: const InputDecoration(labelText: 'Plaka Numarası', prefixIcon: Icon(Icons.pin_outlined)),
-                textCapitalization: TextCapitalization.characters, // Otomatik büyük harf
+                textCapitalization: TextCapitalization.characters,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return 'Lütfen plaka numarası giriniz';
-                  // İsteğe bağlı: Plaka formatı için regex kontrolü eklenebilir
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _chassisNoController,
+                decoration: const InputDecoration(labelText: 'Şasi Numarası', prefixIcon: Icon(Icons.confirmation_number_outlined)),
+                textCapitalization: TextCapitalization.characters,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return 'Lütfen şasi numarası giriniz';
+                  if (value.length != 17) return 'Şasi numarası 17 karakter olmalıdır.'; // Standart Şasi No uzunluğu
+                  return null;
+                },
+              ),
+
+              _buildSectionTitle("Trafik Sigortası Bilgileri"),
+              TextFormField(controller: _policyHolderNameController, decoration: const InputDecoration(labelText: 'Sigortalının Adı Soyadı', prefixIcon: Icon(Icons.person_outline))),
+              const SizedBox(height: 16),
+              TextFormField(controller: _policyHolderIdController, decoration: const InputDecoration(labelText: 'Sigortalının TC Kimlik/Vergi No', prefixIcon: Icon(Icons.badge_outlined)), keyboardType: TextInputType.text), // TC veya Vergi No metin olabilir
+              const SizedBox(height: 16),
+              TextFormField(controller: _insuranceCompanyController, decoration: const InputDecoration(labelText: 'Sigorta Şirketinin Unvanı', prefixIcon: Icon(Icons.business_outlined))),
+              const SizedBox(height: 16),
+              TextFormField(controller: _agencyNoController, decoration: const InputDecoration(labelText: 'Acente Numarası', prefixIcon: Icon(Icons.support_agent_outlined))),
+              const SizedBox(height: 16),
+              TextFormField(controller: _policyNoController, decoration: const InputDecoration(labelText: 'Poliçe Numarası', prefixIcon: Icon(Icons.article_outlined))),
+              const SizedBox(height: 16),
+              TextFormField(controller: _tramerNoController, decoration: const InputDecoration(labelText: 'TRAMER Belge No (varsa)', prefixIcon: Icon(Icons.assignment_outlined))),
+              const SizedBox(height: 16),
+              Row(children: [
+                  Expanded(
+                    child: TextFormField(
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Poliçe Başlangıç Tarihi',
+                        prefixIcon: Icon(Icons.date_range_outlined),
+                        suffixIcon: IconButton(icon: Icon(Icons.calendar_month), onPressed: () => _selectDate(context, true)),
+                      ),
+                      controller: TextEditingController(text: _policyStartDate != null ? DateFormat('dd.MM.yyyy', 'tr').format(_policyStartDate!) : ''),
+                      validator: (value) => _policyStartDate == null ? 'Başlangıç tarihi seçiniz' : null,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Poliçe Bitiş Tarihi',
+                        prefixIcon: Icon(Icons.date_range_outlined),
+                        suffixIcon: IconButton(icon: Icon(Icons.calendar_month), onPressed: () => _selectDate(context, false)),
+                      ),
+                      controller: TextEditingController(text: _policyEndDate != null ? DateFormat('dd.MM.yyyy', 'tr').format(_policyEndDate!) : ''),
+                       validator: (value) {
+                        if (_policyEndDate == null) return 'Bitiş tarihi seçiniz';
+                        if (_policyStartDate != null && _policyEndDate!.isBefore(_policyStartDate!)) {
+                          return 'Bitiş tarihi, başlangıçtan önce olamaz';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ]),
+              const SizedBox(height: 16),
+              
+              _buildSectionTitle("Yeşil Kart Bilgileri (varsa)"),
+              SwitchListTile(
+                title: const Text('Yeşil Kart Mevcut mu?'),
+                value: _hasGreenCard,
+                onChanged: (bool value) {
+                  setState(() {
+                    _hasGreenCard = value;
+                  });
+                },
+                secondary: Icon(_hasGreenCard ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded, color: theme.colorScheme.primary),
+              ),
+              if (_hasGreenCard) ...[
+                const SizedBox(height: 16),
+                TextFormField(controller: _greenCardNoController, decoration: const InputDecoration(labelText: 'Yeşil Kart Numarası', prefixIcon: Icon(Icons.credit_card_outlined))),
+                const SizedBox(height: 16),
+                TextFormField(controller: _greenCardCountryController, decoration: const InputDecoration(labelText: 'Yeşil Kart Ülkesi', prefixIcon: Icon(Icons.public_outlined))),
+                const SizedBox(height: 16),
+                TextFormField(controller: _greenCardPassportNoController, decoration: const InputDecoration(labelText: 'Pasaport Numarası (Yeşil Kart için)', prefixIcon: Icon(Icons.badge_outlined))),
+              ],
             ],
           ),
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: _isSaving ? null : () => Navigator.pop(context),
           child: const Text('İptal'),
         ),
-        ElevatedButton(
-          onPressed: _saveVehicle,
-          child: const Text('Kaydet'),
+        ElevatedButton.icon(
+          icon: _isSaving ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Icon(Icons.save_alt_rounded),
+          label: Text(_isSaving ? 'KAYDEDİLİYOR...' : 'Kaydet'),
+          onPressed: _isSaving ? null : _saveVehicle,
         ),
       ],
     );
