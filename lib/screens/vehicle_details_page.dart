@@ -5,8 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
-// image_picker da kullanılabilir, file_picker daha genel dosya seçimine izin verir.
-// Mevcut kodunuzda file_picker kullanıldığı için onu koruyorum.
 
 class VehicleDetailsPage extends StatefulWidget {
   final String vehicleId;
@@ -23,17 +21,12 @@ class VehicleDetailsPage extends StatefulWidget {
 }
 
 class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
-  // Fotoğrafları doğrudan Firestore'dan stream ile almak daha güncel olmasını sağlar
-  // Ancak başlangıç verisiyle gelip, yeni eklenenleri setState ile yönetmek de bir yöntem.
-  // Daha dinamik bir yapı için StreamBuilder kullanılabilir.
-  // Şimdilik mevcut yapıyı koruyarak UI iyileştirmeleri yapalım.
-  late List<String> _photos; // String listesi olarak tanımlandı
+  late List<String> _photos;
   bool _isUploading = false;
 
   @override
   void initState() {
     super.initState();
-    // Gelen verideki 'photos' alanını güvenli bir şekilde List<String>'e çevirelim
     var photoData = widget.vehicleData['photos'];
     if (photoData is List) {
       _photos = List<String>.from(photoData.whereType<String>());
@@ -78,7 +71,7 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
 
         if (mounted) {
           setState(() {
-            _photos.add(downloadUrl); // Yerel listeyi de güncelle
+            _photos.add(downloadUrl);
             _isUploading = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
@@ -96,8 +89,7 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
     }
   }
 
-  // İsteğe bağlı: Fotoğraf silme fonksiyonu
-  Future<void> _deletePhoto(String photoUrl, int index) async {
+  Future<void> _deletePhoto(String photoUrl, int index, {bool closeDialogAfterDelete = false}) async {
     bool confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -120,12 +112,13 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
+    // Yükleme göstergesini aktif et (opsiyonel, ama iyi bir UX için)
+    // if(mounted) setState(() => _isDeleting = true); // _isDeleting diye bir state tanımlamanız gerekir
+
     try {
-      // Firebase Storage'dan sil
       firebase_storage.Reference photoRef = firebase_storage.FirebaseStorage.instance.refFromURL(photoUrl);
       await photoRef.delete();
 
-      // Firestore'dan URL'yi kaldır
       await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
@@ -138,13 +131,18 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
       if (mounted) {
         setState(() {
           _photos.removeAt(index);
+          // _isDeleting = false; // Yükleme göstergesini kapat
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Fotoğraf silindi.')),
         );
+        if (closeDialogAfterDelete && Navigator.canPop(context)) {
+          Navigator.pop(context); // Büyük fotoğraf dialogunu kapat
+        }
       }
     } catch (e) {
       if (mounted) {
+        // setState(() => _isDeleting = false); // Yükleme göstergesini kapat
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Fotoğraf silinirken hata: $e')),
         );
@@ -152,27 +150,26 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
     }
   }
 
-
   Widget _buildDetailRow({required BuildContext context, required IconData icon, required String label, required String value}) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0), // Dikey boşluk artırıldı
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: theme.colorScheme.primary, size: 24), // Tema rengi ve standart boyut
+          Icon(icon, color: theme.colorScheme.primary, size: 24),
           const SizedBox(width: 16),
           Expanded(
-            flex: 2, // Etiket için biraz daha fazla yer
+            flex: 2,
             child: Text(
               '$label:',
               style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
           ),
           Expanded(
-            flex: 3, // Değer için daha fazla yer
+            flex: 3,
             child: Text(
-              value.isNotEmpty ? value : '-', // Boş değer için '-'
+              value.isNotEmpty ? value : '-',
               style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
@@ -184,20 +181,19 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final vehicleData = widget.vehicleData; // Başlangıç verisini kullan
+    final vehicleData = widget.vehicleData;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(vehicleData['plaka']?.toString() ?? 'Araç Detayları'), // Başlıkta plaka
+        title: Text(vehicleData['plaka']?.toString() ?? 'Araç Detayları'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch, // Butonların tam genişlik alması için
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Card(
-              // Card stili temadan gelecek
-              elevation: 4, // Temadan gelen stili geçersiz kılmak için gerekirse
+              elevation: 4,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -218,14 +214,14 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Araç Fotoğrafları (${_photos.length})', // Fotoğraf sayısı
+              'Araç Fotoğrafları (${_photos.length})',
               style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             if (_isUploading)
               const Center(child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator())),
             if (!_isUploading && _photos.isEmpty)
-              Center( // Ortala
+              Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 32.0),
                   child: Column(
@@ -248,15 +244,14 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, // Daha büyük önizlemeler için 2 veya 3
+                  crossAxisCount: 3,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
                 ),
-                itemCount: _photos.length + 1, // Son hücre "Ekle" butonu için
+                itemCount: _photos.length + 1,
                 itemBuilder: (context, index) {
                   if (index == _photos.length) {
-                    // "Fotoğraf Ekle" butonu
-                    return InkWell( // Tıklanabilir alan
+                    return InkWell(
                       onTap: _uploadPhoto,
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
@@ -266,7 +261,6 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
                           border: Border.all(
                             color: theme.colorScheme.primary.withOpacity(0.5),
                             width: 1.5,
-                            // style: BorderStyle.dashed // Kesikli çizgi için
                           ),
                         ),
                         child: Center(
@@ -282,47 +276,80 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
                       ),
                     );
                   } else {
-                    // Mevcut fotoğraflar
                     String photoUrl = _photos[index];
                     return GestureDetector(
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (_) => Dialog(
+                          builder: (BuildContext dialogContext) => Dialog( // dialogContext eklendi
                             backgroundColor: Colors.transparent,
                             insetPadding: const EdgeInsets.all(10),
-                            child: Column( // Kapat butonu için
+                            child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Expanded(
-                                  child: InteractiveViewer( // Zoom için
+                                  child: InteractiveViewer(
                                     panEnabled: false,
-                                    boundaryMargin: const EdgeInsets.all(80),
+                                    boundaryMargin: const EdgeInsets.all(20), // Kenar boşluğu azaltıldı
                                     minScale: 0.5,
                                     maxScale: 4,
-                                    child: ClipRRect(
+                                    child: ClipRRect( // Köşeleri yuvarlatmak için
                                       borderRadius: BorderRadius.circular(12.0),
                                       child: Image.network(photoUrl, fit: BoxFit.contain),
                                     ),
                                   ),
                                 ),
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text("Kapat", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
+                                Padding( // Butonlar için padding
+                                  padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      TextButton.icon(
+                                        icon: Icon(Icons.close_rounded, color: Colors.white.withOpacity(0.9)),
+                                        label: Text("Kapat", style: TextStyle(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold)),
+                                        onPressed: () => Navigator.of(dialogContext).pop(),
+                                        style: TextButton.styleFrom(
+                                          backgroundColor: Colors.black.withOpacity(0.4),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
+                                        ),
+                                      ),
+                                      TextButton.icon(
+                                        icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error),
+                                        label: Text("Sil", style: TextStyle(color: theme.colorScheme.error, fontWeight: FontWeight.bold)),
+                                        onPressed: () async {
+                                          // Dialog içinden silme işlemi çağırılacak
+                                          // Bu fonksiyon, kendi içinde onay dialogu gösterir.
+                                          // Silme sonrası büyük fotoğraf dialogunun kapanması için closeDialogAfterDelete: true
+                                          await _deletePhoto(photoUrl, index, closeDialogAfterDelete: true);
+                                          // _deletePhoto zaten Navigator.pop(context) yapacak (eğer closeDialogAfterDelete true ise)
+                                          // Bu yüzden burada ekstradan Navigator.pop(dialogContext) yapmaya gerek yok,
+                                          // çünkü _deletePhoto başarılı olursa bu dialog zaten kapanmış olacak.
+                                          // Eğer _deletePhoto'dan sonra bu dialog hala açıksa (örneğin silme iptal edildiyse)
+                                          // o zaman manuel kapatmak gerekebilir, ama mevcut durumda _deletePhoto'nun
+                                          // yönetimi yeterli olmalı.
+                                        },
+                                        style: TextButton.styleFrom(
+                                          backgroundColor: Colors.black.withOpacity(0.4),
+                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 )
                               ],
                             ),
                           ),
                         );
                       },
-                      onLongPress: () { // Uzun basıldığında silme seçeneği
-                        _deletePhoto(photoUrl, index);
-                      },
+                      // Uzun basarak silme hala aktif kalabilir, isteğe bağlı.
+                      // onLongPress: () {
+                      //   _deletePhoto(photoUrl, index);
+                      // },
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(12), // Daha yuvarlak köşeler
+                            borderRadius: BorderRadius.circular(12),
                             child: Image.network(
                               photoUrl,
                               fit: BoxFit.cover,
@@ -345,11 +372,12 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
                               ),
                             ),
                           ),
-                           Positioned( // Silme ikonu için ipucu (uzun basış)
-                            top: 4,
-                            right: 4,
-                            child: Icon(Icons.delete_sweep_outlined, color: Colors.white.withOpacity(0.2), size: 16),
-                          )
+                          // Küçük resimdeki silme ipucu kaldırıldı, çünkü artık tıklayınca silme seçeneği var.
+                          // Positioned(
+                          //   top: 4,
+                          //   right: 4,
+                          //   child: Icon(Icons.delete_sweep_outlined, color: Colors.white.withOpacity(0.2), size: 16),
+                          // )
                         ],
                       ),
                     );

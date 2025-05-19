@@ -1,10 +1,12 @@
 // lib/screens/account_page.dart
+
 import 'dart:io'; // File işlemleri için
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart'; // Fotoğraf seçimi için
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage; // Firebase Storage için
+import 'package:flutter/services.dart'; // TextInputFormatter için eklendi
 
 class AccountPage extends StatefulWidget {
   final VoidCallback? onProfileUpdated; // Callback fonksiyonu
@@ -169,7 +171,7 @@ class _AccountPageState extends State<AccountPage> {
                       ),
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) return 'Boş bırakıldı';
+                        if (value == null || value.trim().isEmpty) return 'Boş bırakılamaz';
                         if (!value.contains('@') || !value.contains('.')) return 'Geçerli e-posta giriniz';
                         return null;
                       },
@@ -180,10 +182,27 @@ class _AccountPageState extends State<AccountPage> {
                       decoration: InputDecoration(
                         labelText: 'Telefon Numaranız',
                         prefixIcon: Icon(Icons.phone_outlined, color: Theme.of(context).colorScheme.primary),
+                        hintText: 'Örn: 5xxxxxxxxx', // Kullanıcıya format ipucu
+                        counterText: "", // Varsayılan karakter sayacını gizle
                       ),
                       keyboardType: TextInputType.phone,
+                      // Sadece rakam girişine izin ver
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
+                      // Maksimum karakter sayısını belirle (örneğin, Türkiye için 10 haneli numara, başındaki 0 olmadan)
+                      maxLength: 10,
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) return 'Boş bırakıldı';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Boş bırakılamaz';
+                        }
+                        if (value.length < 10) { // Minimum uzunluk kontrolü
+                          return 'Telefon numarası 10 haneli olmalıdır';
+                        }
+                        // İsteğe bağlı: Daha detaylı format kontrolü (örneğin, ilk hane '5' olmalı gibi)
+                        // if (!value.startsWith('5')) {
+                        //   return 'Telefon numarası 5 ile başlamalıdır';
+                        // }
                         return null;
                       },
                     ),

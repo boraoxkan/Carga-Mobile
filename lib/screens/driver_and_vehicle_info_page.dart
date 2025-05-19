@@ -20,13 +20,14 @@ class DriverAndVehicleInfoPage extends StatefulWidget {
 }
 
 class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
-  final _formKey = GlobalKey<FormState>(); // Form kullanılmıyor gibi ama kalsın
+  // _formKey burada tanımlı ama kullanılmıyor gibi, eğer bir Form widget'ı eklenirse aktifleşir.
+  // final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
 
   String? selectedVehicleId;
   List<Map<String, dynamic>> vehiclesList = [];
-  bool _isLoading = true;
+  bool _isLoading = true; // Hem genel yükleme hem de buton aksiyonu için kullanılabilir
 
   @override
   void initState() {
@@ -40,7 +41,7 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
 
     try {
       await _loadDriverInfo();
-      if (!mounted) return;
+      if (!mounted) return; // _loadDriverInfo sonrası widget mount durumunu kontrol et
       await _loadVehicles();
     } catch (e, s) {
       print("HATA: Sürücü/Araç bilgileri yüklenirken hata oluştu (DriverAndVehicleInfoPage): $e");
@@ -63,6 +64,7 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
       if (mounted) {
         _nameController.text = "Giriş Yapılmamış";
         _phoneController.text = "";
+        // _isLoading=false burada yapılabilir veya _loadInitialData'nın finally'sinde
       }
       return;
     }
@@ -96,7 +98,15 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
 
   Future<void> _loadVehicles() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      if(mounted) {
+        setState(() {
+          vehiclesList = [];
+          selectedVehicleId = null;
+        });
+      }
+      return;
+    }
     try {
       final snap = await FirebaseFirestore.instance
           .collection('users')
@@ -113,11 +123,12 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
       }).toList();
 
       if (vehiclesList.isNotEmpty) {
+        // Eğer önceden bir araç seçili değilse veya seçili araç artık listede yoksa ilk aracı seç
         if (selectedVehicleId == null || !vehiclesList.any((v) => v['id'] == selectedVehicleId)) {
           selectedVehicleId = vehiclesList.first['id'] as String?;
         }
       } else {
-        selectedVehicleId = null;
+        selectedVehicleId = null; // Araç yoksa seçili ID'yi null yap
       }
     } catch (e, s) {
       print("HATA: Firestore'dan araç bilgisi alınırken (DriverAndVehicleInfoPage): $e");
@@ -197,30 +208,17 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
                 style: theme.textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),
-              // İsteğe bağlı: Araçlarım sayfasına yönlendirme butonu eklenebilir
-              // const SizedBox(height: 16),
-              // OutlinedButton.icon(
-              //   icon: const Icon(Icons.add_circle_outline),
-              //   label: const Text("Araç Ekle"),
-              //   onPressed: () {
-              //     // Navigator.popUntil(context, ModalRoute.withName('/home')); // Ana sayfaya dön
-              //     // Sonra HomeScreen üzerinden VehiclesPage'e geçiş sağlanabilir
-              //     // Veya doğrudan VehiclesPage.showAddVehicleDialog(context) çağrılabilir,
-              //     // ancak bu HomeScreen'in state'ini yönetmeyi gerektirir.
-              //     // Şimdilik bu butonu eklemiyorum.
-              //   },
-              // )
             ],
           ),
         ),
       );
     }
 
-    final displayCount = vehiclesList.length > 2 ? 2 : vehiclesList.length; // İlk 2 aracı ve "Diğer" butonunu göster
+    final displayCount = vehiclesList.length > 2 ? 2 : vehiclesList.length;
     final showMoreButton = vehiclesList.length > 2;
 
     return SizedBox(
-      height: 130, // Kart yüksekliği için biraz daha fazla yer
+      height: 130,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: showMoreButton ? displayCount + 1 : displayCount,
@@ -258,7 +256,7 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
           final plaka = v['plaka']?.toString() ?? '-';
 
           return SizedBox(
-            width: 150, // Kart genişliği
+            width: 150,
             child: Card(
               elevation: isSelected ? 4 : 1,
               color: isSelected ? theme.colorScheme.primaryContainer.withOpacity(0.7) : theme.cardTheme.color,
@@ -302,11 +300,15 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // _isLoading durumu hem ilk yükleme için hem de "Devam Et" butonuna basıldığındaki işlem için kullanılabilir.
+    // Butona özel bir _isProcessing gibi bir state de tanımlanabilir.
+    bool isActionInProgress = _isLoading && !vehiclesList.isNotEmpty; // Sadece ilk yükleme için genel _isLoading'i kullan, buton için ayrı yönetilebilir.
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isJoining ? "Tutanağa Dahil Ol: Bilgiler" : "Yeni Tutanak: Bilgiler"),
       ),
-      body: _isLoading
+      body: isActionInProgress // İlk veri yükleniyorsa
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _loadInitialData,
@@ -331,7 +333,6 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
                               decoration: InputDecoration(
                                 labelText: "Ad Soyad",
                                 prefixIcon: Icon(Icons.person_outline, color: theme.colorScheme.primary),
-                                // fillColor: theme.inputDecorationTheme.fillColor?.withOpacity(0.5) // Daha belirgin readOnly
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -341,7 +342,6 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
                               decoration: InputDecoration(
                                 labelText: "Telefon Numarası",
                                 prefixIcon: Icon(Icons.phone_outlined, color: theme.colorScheme.primary),
-                                // fillColor: theme.inputDecorationTheme.fillColor?.withOpacity(0.5)
                               ),
                               keyboardType: TextInputType.phone,
                             ),
@@ -379,14 +379,16 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
 
                     // Devam Et Butonu
                     ElevatedButton.icon(
-                      icon: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
-                      label: const Text("Devam Et"),
+                      icon: _isLoading && !isActionInProgress // Buton işlemdeyse farklı ikon/text
+                          ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: theme.colorScheme.onPrimary, strokeWidth: 2))
+                          : const Icon(Icons.arrow_forward_ios_rounded, size: 18),
+                      label: Text(_isLoading && !isActionInProgress ? "İŞLENİYOR..." : "Devam Et"),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      onPressed: selectedVehicleId == null
+                      onPressed: (selectedVehicleId == null || (_isLoading && !isActionInProgress)) // Araç seçilmemişse veya işlemdeyse pasif
                           ? null
-                          : () {
+                          : () async {
                               final currentUser = FirebaseAuth.instance.currentUser;
                               if (currentUser == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -396,6 +398,7 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
                               }
 
                               if (widget.isJoining) {
+                                // KATILAN KULLANICI AKIŞI
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -405,13 +408,63 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
                                   ),
                                 );
                               } else {
-                                final qrData = "${currentUser.uid}|$selectedVehicleId";
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => QRDisplayPage(recordId: qrData),
-                                  ),
-                                );
+                                // OLUŞTURAN KULLANICI AKIŞI (YENİ TUTANAK)
+                                if(mounted) setState(() => _isLoading = true); // Buton işlemi için yükleme durumu
+
+                                try {
+                                  // 1. Benzersiz bir tutanak ID'si oluştur
+                                  final newUniqueRecordId = FirebaseFirestore.instance.collection('records').doc().id;
+
+                                  // 2. Bu benzersiz ID ile Firestore'da başlangıç kaydını oluştur
+                                  await FirebaseFirestore.instance.collection('records').doc(newUniqueRecordId).set({
+                                    'creatorUid': currentUser.uid,
+                                    'creatorVehicleId': selectedVehicleId,
+                                    'status': 'pending_scan',
+                                    'confirmedByCreator': true,
+                                    'confirmedByJoiner': false, // Başlangıçta false
+                                    'createdAt': FieldValue.serverTimestamp(),
+                                    'isDeletedByCreator': false, // YENİ EKLENDİ
+                                    'isDeletedByJoiner': false,  // YENİ EKLENDİ
+                                    'joinerUid': null, // Başlangıçta null
+                                    'joinerVehicleId': null, // Başlangıçta null
+                                    // Diğer tüm potansiyel alanlar başlangıçta null veya varsayılan değer olabilir
+                                    'latitude': null,
+                                    'longitude': null,
+                                    'formattedAddress': null,
+                                    'creatorDamageRegions': [],
+                                    'creatorNotes': null,
+                                    'creatorProcessedDamageImageBase64': null,
+                                    'creatorDetectionResults': null,
+                                    'creatorLastUpdateTimestamp': null,
+                                    'joinerDamageRegions': [],
+                                    'joinerNotes': null,
+                                    'joinerProcessedDamageImageBase64': null,
+                                    'joinerDetectionResults': null,
+                                    'joinerConfirmationTimestamp': null,
+                                    'joinerLastUpdateTimestamp': null,
+                                    'reportFinalizedTimestamp': null,
+                                    // Gerekirse eklemek istediğiniz diğer başlangıç alanları
+                                  });
+
+                                  if (!mounted) return;
+                                  // 3. QRDisplayPage'e bu benzersiz ID'yi gönder
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => QRDisplayPage(recordId: newUniqueRecordId),
+                                    ),
+                                  );
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Tutanak başlatılırken hata: $e')),
+                                    );
+                                  }
+                                } finally {
+                                  if (mounted) {
+                                    setState(() => _isLoading = false); // Buton işlemi için yükleme durumu
+                                  }
+                                }
                               }
                             },
                     ),
