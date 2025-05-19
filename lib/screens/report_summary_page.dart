@@ -8,14 +8,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:path/path.dart' as path; // path.basename için
+import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart'; // MediaType için
+import 'package:geocoding/geocoding.dart'; // Adres çevirme için eklendi
 import 'package:tutanak/models/crash_region.dart';
 
 class ReportSummaryPage extends StatefulWidget {
   final Set<CrashRegion> selectedRegions;
-  final Map<String, String> vehicleInfo; // Kendi aracının bilgileri
+  final Map<String, String> vehicleInfo;
   final LatLng confirmedPosition;
   final String recordId;
   final bool isCreator;
@@ -36,43 +37,127 @@ class ReportSummaryPage extends StatefulWidget {
 class _ReportSummaryPageState extends State<ReportSummaryPage> {
   final TextEditingController _notesController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  
-  XFile? _selectedImageFileForUbuntu; // Ubuntu sunucusu için seçilen tek fotoğraf
-  // List<XFile> _selectedImageFilesForFirebase = []; // Firebase Storage için (şimdilik kullanılmıyor)
-  
-  // List<String> _firebaseStorageUploadedImageUrls = []; // Firebase için (şimdilik kullanılmıyor)
-  
+  XFile? _selectedImageFileForUbuntu;
   Uint8List? _processedImageBytesFromUbuntu;
-  List<dynamic>? _detectionResultsFromUbuntu; 
+  List<dynamic>? _detectionResultsFromUbuntu;
+  bool _isProcessingAndSaving = false;
 
-  bool _isProcessingAndSaving = false; // Genel kaydetme/işleme durumu
-
-  // Karşı taraf verileri
   Map<String, dynamic>? _otherPartyUserData;
   Map<String, dynamic>? _otherPartyVehicleData;
   Set<CrashRegion> _otherPartySelectedRegions = {};
-  List<String> _otherPartyFirebaseStorageImageUrls = []; // Karşı taraf Firebase Storage kullandıysa
-  String? _otherPartyProcessedImageBase64FromUbuntu; // Karşı taraf Ubuntu sunucusu kullandıysa
+  List<String> _otherPartyFirebaseStorageImageUrls = [];
+  String? _otherPartyProcessedImageBase64FromUbuntu;
   List<dynamic>? _otherPartyDetectionResultsFromUbuntu;
   bool _isLoadingOtherPartyData = true;
 
-  // Ubuntu sunucu adresi (güvenlik için bu tür adresler konfigürasyon dosyasında tutulmalı)
-  final String _ubuntuServerUrl = "http://100.71.209.113:5001/process_damage_image"; 
-  // Mevcut kodunuzda bu false, yani Ubuntu sunucusu kullanılıyor.
-  final bool _useFirebaseStorageForOwnPhotos = false; 
+  // Adres için state değişkenleri
+  String? _address;
+  bool _isFetchingAddress = true;
+  String? _addressError;
+
+  final String _ubuntuServerUrl = "http://100.110.23.124:5001/process_damage_image";
+  final bool _useFirebaseStorageForOwnPhotos = false;
 
   @override
   void initState() {
     super.initState();
     _fetchOtherPartyData();
+    _getAddressFromLatLng(); // Adresi çekmek için initState'te çağır
   }
 
+  // Enlem ve boylamdan adres bilgisini getiren fonksiyon
+  Future<void> _getAddressFromLatLng() async {
+    if (!mounted) return;
+    print("Adres çekme işlemi başlıyor... Enlem: ${widget.confirmedPosition.latitude}, Boylam: ${widget.confirmedPosition.longitude}"); // Debug
+    setState(() {
+      _isFetchingAddress = true;
+      _addressError = null;
+    });
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        widget.confirmedPosition.latitude,
+        widget.confirmedPosition.longitude,
+        // localeIdentifier parametresi kaldırıldı. Paket cihazın yerel ayarlarını kullanır.
+      );
+      print("Placemarks alındı: ${placemarks.length} adet"); // Debug
+
+      if (placemarks.isNotEmpty && mounted) {
+        final Placemark place = placemarks.first;
+        print("İlk placemark: ${place.toJson()}"); // Debug - Gelen tüm veriyi görmek için
+
+        String street = place.street ?? ''; // Sokak adı ve numarası birleşik olabilir.
+        String thoroughfare = place.thoroughfare ?? ''; // Cadde/Yol adı
+        String subLocality = place.subLocality ?? ''; // Mahalle
+        String locality = place.locality ?? ''; // İlçe/Semt
+        String administrativeArea = place.administrativeArea ?? ''; // İl
+        String postalCode = place.postalCode ?? '';
+        String country = place.country ?? '';
+
+        // Adres formatlama (Örnek, ihtiyaca göre düzenlenebilir)
+        // Bazı durumlarda place.street hem caddeyi hem de sokak adını içerebilir.
+        // place.thoroughfare ise sadece cadde/yol adını verebilir.
+        // Bu yüzden tekrarları önlemek için kontrol eklenebilir.
+
+        List<String> addressParts = [];
+        if (street.isNotEmpty) {
+          addressParts.add(street);
+        }
+        // Eğer thoroughfare caddesi street içinde geçmiyorsa ve farklıysa ekle
+        if (thoroughfare.isNotEmpty && !street.toLowerCase().contains(thoroughfare.toLowerCase())) {
+           addressParts.add(thoroughfare);
+        }
+        if (subLocality.isNotEmpty) {
+          addressParts.add(subLocality);
+        }
+        if (locality.isNotEmpty) {
+          addressParts.add(locality);
+        }
+        if (administrativeArea.isNotEmpty) {
+          addressParts.add(administrativeArea);
+        }
+        if (postalCode.isNotEmpty) {
+          addressParts.add(postalCode);
+        }
+        if (country.isNotEmpty) {
+          // addressParts.add(country); // Ülke genellikle gerekmeyebilir
+        }
+
+        String formattedAddress = addressParts.where((part) => part.isNotEmpty).join(', ');
+        // Çift virgül veya başlangıç/sondaki virgülleri temizle
+        formattedAddress = formattedAddress.replaceAll(RegExp(r',\s*,'), ', ').replaceAll(RegExp(r'^[\s,]+|[\s,]+$'), '');
+
+
+        print("Formatlanmış Adres: $formattedAddress"); // Debug
+        setState(() {
+          _address = formattedAddress.isNotEmpty ? formattedAddress : "Adres detayı bulunamadı.";
+        });
+      } else if (mounted) {
+        print("Placemark bulunamadı."); // Debug
+        setState(() {
+          _address = "Adres bilgisi bulunamadı.";
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        print("Adres çevirme hatası (catch bloğu): $e"); // Debug
+        setState(() {
+          _addressError = "Adres alınamadı: ${e.toString().substring(0, (e.toString().length > 50) ? 50 : e.toString().length)}..."; // Hatayı kısaltarak göster
+          _address = null;
+        });
+      }
+    } finally {
+      if (mounted) {
+        print("Adres çekme işlemi tamamlandı. _isFetchingAddress: false, Adres: $_address, Hata: $_addressError"); // Debug
+        setState(() {
+          _isFetchingAddress = false;
+        });
+      }
+    }
+  }
+
+
   Future<void> _fetchOtherPartyData() async {
-    // ... (Bu metot öncekiyle aynı kalabilir, sadece alan adlarını kontrol edin) ...
-    // Önemli: Firestore'dan veri çekerken kullanılan alan adlarının
-    // (örn: 'joinerDamageRegions', 'creatorProcessedDamageImageBase64')
-    // _saveReportDataToFirestore metodunda kullanılanlarla tutarlı olduğundan emin olun.
-     if (!mounted) return;
+    if (!mounted) return;
     setState(() { _isLoadingOtherPartyData = true; });
     try {
       final recordDoc = await FirebaseFirestore.instance.collection('records').doc(widget.recordId).get();
@@ -82,19 +167,16 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
       }
       final recordData = recordDoc.data()!;
       String otherPartyRolePrefix = widget.isCreator ? "joiner" : "creator";
-      String ownRolePrefix = widget.isCreator ? "creator" : "joiner"; // Kendi rolümüzü de bilelim
 
-      // Karşı tarafın kullanıcı ve araç bilgileri (RecordConfirmationPage'de eklendiğini varsayıyoruz)
       final String? otherPartyUid = recordData['${otherPartyRolePrefix}Uid'] as String?;
       if (otherPartyUid != null) {
         final userDoc = await FirebaseFirestore.instance.collection('users').doc(otherPartyUid).get();
         if (userDoc.exists && mounted) {
            setState(() => _otherPartyUserData = userDoc.data());
         }
-        // Karşı tarafın araç bilgisi genellikle 'records' dokümanına doğrudan yazılır.
         if (recordData.containsKey('${otherPartyRolePrefix}VehicleInfo') && mounted) {
             setState(()=> _otherPartyVehicleData = recordData['${otherPartyRolePrefix}VehicleInfo'] as Map<String, dynamic>?);
-        } else { // Eğer vehicleId üzerinden çekmek gerekirse (daha karmaşık)
+        } else {
             final String? otherPartyVehicleId = recordData['${otherPartyRolePrefix}VehicleId'] as String?;
             if (otherPartyVehicleId != null) {
                 final vehicleDoc = await FirebaseFirestore.instance.collection('users').doc(otherPartyUid).collection('vehicles').doc(otherPartyVehicleId).get();
@@ -104,8 +186,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
             }
         }
       }
-      
-      // Karşı tarafın hasar bölgeleri
+
       final otherPartyRegionsFieldName = '${otherPartyRolePrefix}DamageRegions';
       if (recordData.containsKey(otherPartyRegionsFieldName) && recordData[otherPartyRegionsFieldName] is List) {
         List<dynamic> regionsData = recordData[otherPartyRegionsFieldName];
@@ -113,15 +194,14 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
           setState(() {
             _otherPartySelectedRegions = regionsData
                 .map((regionString) {
-                  try { return CrashRegion.values.byName(regionString.toString().split('.').last); } // Enum adını doğru parse et
+                  try { return CrashRegion.values.byName(regionString.toString().split('.').last); }
                   catch (e) { print("Enum parse error: $regionString, $e"); return null; }
                 })
                 .whereType<CrashRegion>().toSet();
           });
         }
       }
-      
-      // Karşı tarafın Ubuntu ile işlenmiş fotoğrafı ve tespitleri
+
       final otherPartyProcessedBase64FieldName = '${otherPartyRolePrefix}ProcessedDamageImageBase64';
       if (recordData.containsKey(otherPartyProcessedBase64FieldName) && recordData[otherPartyProcessedBase64FieldName] is String && mounted) {
           setState(() => _otherPartyProcessedImageBase64FromUbuntu = recordData[otherPartyProcessedBase64FieldName] as String?);
@@ -131,12 +211,6 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
           setState(() => _otherPartyDetectionResultsFromUbuntu = recordData[otherPartyDetectionsFieldName] as List<dynamic>?);
       }
 
-      // Karşı tarafın Firebase Storage'a yüklediği fotoğraflar (eğer bu senaryo varsa)
-      // final otherPartyFsPhotosFieldName = '${otherPartyRolePrefix}DamagePhotos'; // Eğer Firebase Storage da kullanılıyorsa
-      // if (recordData.containsKey(otherPartyFsPhotosFieldName) && recordData[otherPartyFsPhotosFieldName] is List && mounted) {
-      //     setState(() => _otherPartyFirebaseStorageImageUrls = List<String>.from(recordData[otherPartyFsPhotosFieldName]));
-      // }
-
     } catch (e,s) {
       print("Karşı taraf verileri çekilirken hata (report_summary_page): $e \n$s");
       if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Karşı taraf verileri yüklenemedi: $e")));
@@ -145,9 +219,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
     }
   }
 
-
   Future<void> _saveReportDataToFirestore({
-    // List<String>? firebaseStorageUrls, // Şimdilik kullanılmıyor
     String? processedImageBase64ForUbuntu,
     List<dynamic>? detectionsForUbuntu,
   }) async {
@@ -158,16 +230,12 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
 
     final String userRolePrefix = widget.isCreator ? "creator" : "joiner";
     Map<String, dynamic> dataToSave = {
-      '${userRolePrefix}Uid': currentUser.uid, // Kimin bilgi girdiğini belirt
-      '${userRolePrefix}VehicleInfo': widget.vehicleInfo, // Kendi aracının bilgileri (marka, model, plaka vb.)
+      '${userRolePrefix}Uid': currentUser.uid,
+      '${userRolePrefix}VehicleInfo': widget.vehicleInfo,
       '${userRolePrefix}Notes': _notesController.text.trim(),
-      '${userRolePrefix}DamageRegions': widget.selectedRegions.map((r) => r.name).toList(), // Enum'ın adını kaydet
+      '${userRolePrefix}DamageRegions': widget.selectedRegions.map((r) => r.name).toList(),
       '${userRolePrefix}LastUpdateTimestamp': FieldValue.serverTimestamp(),
     };
-
-    // if (firebaseStorageUrls != null && firebaseStorageUrls.isNotEmpty) {
-    //   dataToSave['${userRolePrefix}DamagePhotos'] = firebaseStorageUrls;
-    // }
 
     if (processedImageBase64ForUbuntu != null) {
       dataToSave['${userRolePrefix}ProcessedDamageImageBase64'] = processedImageBase64ForUbuntu;
@@ -176,24 +244,29 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
       dataToSave['${userRolePrefix}DetectionResults'] = detectionsForUbuntu;
     }
 
-    // Konum bilgisi genellikle bir kez, oluşturan tarafından veya her iki tarafın onayıyla eklenir.
-    // Şimdilik, oluşturan tarafın eklediğini varsayıyoruz.
     if (widget.isCreator) {
       final recordDocSnapshot = await FirebaseFirestore.instance.collection('records').doc(widget.recordId).get();
-      if (!recordDocSnapshot.exists || recordDocSnapshot.data()?['latitude'] == null) { // Sadece daha önce eklenmemişse
+      if (!recordDocSnapshot.exists || recordDocSnapshot.data()?['latitude'] == null) {
         dataToSave['latitude'] = widget.confirmedPosition.latitude;
         dataToSave['longitude'] = widget.confirmedPosition.longitude;
         dataToSave['locationSetTimestamp'] = FieldValue.serverTimestamp();
+        // Adresi sadece oluşturan taraf kaydederken ekleyelim (eğer başarılı bir şekilde alındıysa)
+        if (_address != null && _address!.isNotEmpty && _addressError == null && _address != "Adres detayı bulunamadı." && _address != "Adres bilgisi bulunamadı.") {
+          dataToSave['formattedAddress'] = _address;
+        }
+      } else {
+        // Eğer konum daha önce kaydedilmişse ve formatlanmış adres yoksa, yine de eklemeyi deneyebiliriz.
+        // Bu, oluşturan tarafın bilgileri daha sonra güncellemesi durumunda faydalı olabilir.
+        if ((!recordDocSnapshot.data()!.containsKey('formattedAddress') || recordDocSnapshot.data()?['formattedAddress'] == null) &&
+            _address != null && _address!.isNotEmpty && _addressError == null &&
+            _address != "Adres detayı bulunamadı." && _address != "Adres bilgisi bulunamadı.") {
+          dataToSave['formattedAddress'] = _address;
+        }
       }
     }
-    
-    // Durum güncellemesi: Her iki taraf da kendi bilgilerini gönderdiğinde
-    // tutanağın durumu "tamamlandı" veya "PDF oluşturuluyor" gibi bir şeye güncellenebilir.
-    // Bu mantık, her iki tarafın da bilgi gönderip göndermediğini kontrol ederek yapılmalı.
-    // Şimdilik, her kullanıcının kendi bilgilerini gönderdiğini belirten bir durum ekleyelim.
+
     dataToSave['status'] = widget.isCreator ? 'creator_info_submitted' : 'joiner_info_submitted';
-    
-    // Eğer bu işlem sonrası her iki taraf da bilgi göndermişse, durumu 'all_data_submitted' yap
+
     final currentRecordData = (await FirebaseFirestore.instance.collection('records').doc(widget.recordId).get()).data();
     bool creatorSubmitted = widget.isCreator || (currentRecordData?['status'] == 'creator_info_submitted' || currentRecordData?['status'] == 'all_data_submitted');
     bool joinerSubmitted = !widget.isCreator || (currentRecordData?['status'] == 'joiner_info_submitted' || currentRecordData?['status'] == 'all_data_submitted');
@@ -203,27 +276,24 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
         dataToSave['reportFinalizedTimestamp'] = FieldValue.serverTimestamp();
     }
 
-
     await FirebaseFirestore.instance
         .collection('records')
         .doc(widget.recordId)
         .set(dataToSave, SetOptions(merge: true));
   }
 
-  // Fotoğraf seçme (Ubuntu için tek, Firebase için çoklu olabilir)
   Future<void> _pickImageForUbuntu() async {
-     // ... (Önceki _pickImage metodu ile benzer, sadece _selectedImageFileForUbuntu'yu set eder) ...
      try {
       final XFile? pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery, // Veya kameradan seçenek sun
-        imageQuality: 60, 
-        maxWidth: 800, 
+        source: ImageSource.gallery,
+        imageQuality: 60,
+        maxWidth: 800,
       );
       if (pickedFile != null && mounted) {
         setState(() {
-            _selectedImageFileForUbuntu = pickedFile; 
-            _processedImageBytesFromUbuntu = null; // Önceki işlenmiş resmi temizle
-            _detectionResultsFromUbuntu = null;   // Önceki tespitleri temizle
+            _selectedImageFileForUbuntu = pickedFile;
+            _processedImageBytesFromUbuntu = null;
+            _detectionResultsFromUbuntu = null;
         });
       }
     } catch (e) {
@@ -231,10 +301,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
     }
   }
 
-  // Ubuntu sunucusuna gönderme ve Firestore'a kaydetme
   Future<void> _processWithUbuntuServerAndSave() async {
-    // ... (Bu metot öncekiyle aynı, sadece _selectedImageFileForUbuntu'yu kullanır) ...
-    // ... ve başarılı olursa _saveReportDataToFirestore'u çağırır ...
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null || _selectedImageFileForUbuntu == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lütfen giriş yapın ve fotoğraf seçin.')));
@@ -251,7 +318,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
       request.fields['record_id'] = widget.recordId;
       request.fields['user_id'] = currentUser.uid;
 
-      var streamedResponse = await request.send().timeout(const Duration(seconds: 90)); // Timeout artırıldı
+      var streamedResponse = await request.send().timeout(const Duration(seconds: 90));
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
@@ -270,7 +337,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
           );
           if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fotoğraf işlendi ve tutanak bilgileri kaydedildi!')));
-              Navigator.popUntil(context, (route) => route.isFirst); // Ana sayfaya dön
+              Navigator.popUntil(context, (route) => route.isFirst);
           }
         } else {
             throw Exception("Sunucudan işlenmiş fotoğraf alınamadı.");
@@ -291,37 +358,31 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
     }
   }
 
-  // Genel gönderme butonu işlevi
   Future<void> _handleReportSubmission() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lütfen giriş yapın.')));
       return;
     }
-    // En az bir bilgi girilmiş olmalı (hasar bölgesi, not veya fotoğraf)
     if (widget.selectedRegions.isEmpty && _notesController.text.trim().isEmpty && _selectedImageFileForUbuntu == null) {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lütfen hasar bölgesi, fotoğraf veya not gibi en az bir bilgi girin.')));
         return;
     }
-    
+
     if (mounted) setState(() => _isProcessingAndSaving = true);
 
     try {
-      if (!_useFirebaseStorageForOwnPhotos) { // Ubuntu sunucusu akışı
-          if (_selectedImageFileForUbuntu != null) { // Fotoğraf varsa işle ve kaydet
-              await _processWithUbuntuServerAndSave(); 
-          } else { // Sadece notlar ve bölgeler varsa doğrudan kaydet
-              await _saveReportDataToFirestore(); 
+      if (!_useFirebaseStorageForOwnPhotos) {
+          if (_selectedImageFileForUbuntu != null) {
+              await _processWithUbuntuServerAndSave();
+          } else {
+              await _saveReportDataToFirestore();
               if(mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tutanak bilgileriniz (fotoğrafsız) kaydedildi.')));
                   Navigator.popUntil(context, (route) => route.isFirst);
               }
           }
       } else {
-          // Firebase Storage akışı (şimdilik aktif değil)
-          // await _uploadToFirebaseStorageAndSave(); 
-          // Bu metodun da içinde _saveReportDataToFirestore çağrısı olmalı.
-          // Şimdilik sadece notları ve bölgeleri kaydedelim (fotoğrafsız Firebase akışı)
           await _saveReportDataToFirestore();
            if(mounted) {
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tutanak bilgileriniz (Firebase - fotoğrafsız) kaydedildi.')));
@@ -332,13 +393,12 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
         print("Rapor gönderiminde genel hata (_handleReportSubmission): $e\n$s");
         if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Rapor gönderilirken bir hata oluştu: $e')));
     } finally {
-        if(mounted && _isProcessingAndSaving) { // Hata olsa bile veya işlem bitince
+        if(mounted && _isProcessingAndSaving) {
            setState(() => _isProcessingAndSaving = false);
         }
     }
   }
-  
-  // --- UI Yardımcı Metotları ---
+
   Widget _buildSectionHeader(BuildContext context, String title, IconData icon) {
     final theme = Theme.of(context);
     return Padding(
@@ -362,9 +422,6 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
   }) {
     final theme = Theme.of(context);
     return Card(
-      elevation: 2, // Temadan gelecek ama gerekirse ayarlanabilir
-      color: cardColor, // Varsayılan olarak tema kart rengi
-      // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // Temadan gelecek
       child: Padding(
         padding: padding ?? const EdgeInsets.all(16.0),
         child: Column(
@@ -400,11 +457,42 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(flex: 2, child: Text('$label:', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant))),
-          Expanded(flex: 3, child: Text(value ?? '-', style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500))),
+          Expanded(flex: 3, child: Text(value?.isNotEmpty == true ? value! : '-', style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500))),
         ],
       ),
     );
   }
+
+  Widget _buildAddressInfoRow() {
+    final theme = Theme.of(context);
+    print("_buildAddressInfoRow çağrıldı. _isFetchingAddress: $_isFetchingAddress, _address: $_address, _addressError: $_addressError"); // Debug
+    if (_isFetchingAddress) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('Kaza Adresi:', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            const SizedBox(width: 8),
+            const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            const SizedBox(width: 8),
+            Expanded(child: Text("Adres yükleniyor...", style: theme.textTheme.bodySmall)),
+          ],
+        ),
+      );
+    }
+    if (_addressError != null && _addressError!.isNotEmpty) {
+      return _buildTextInfoRow('Kaza Adresi', _addressError);
+    }
+    if (_address != null && _address!.isNotEmpty) {
+      return _buildTextInfoRow('Kaza Adresi', _address);
+    }
+    // Herhangi bir adres veya hata yoksa, enlem/boylam gösterilebilir veya "Belirtilmemiş" denebilir.
+    // Şimdilik varsayılan enlem/boylamı gösterelim, ama bu durum _getAddressFromLatLng'in mantığıyla çelişebilir.
+    // Bu satıra normalde gelinmemesi lazım.
+    return _buildTextInfoRow('Kaza Adresi (Enlem/Boylam)', '${widget.confirmedPosition.latitude.toStringAsFixed(4)}, ${widget.confirmedPosition.longitude.toStringAsFixed(4)}');
+  }
+
 
   Widget _buildRegionsDisplay(Set<CrashRegion> regions, {bool isOwn = true}) {
     final theme = Theme.of(context);
@@ -425,7 +513,6 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
   }
 
   String _regionLabel(CrashRegion region) {
-    // ... (öncekiyle aynı) ...
     switch (region) {
       case CrashRegion.frontLeft:   return 'Ön Sol';
       case CrashRegion.frontCenter: return 'Ön Orta';
@@ -441,7 +528,6 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
 
   Widget _buildPhotoSelectionAndDisplayUI() {
     final theme = Theme.of(context);
-    // Sadece Ubuntu sunucusu akışını ele alıyoruz (_useFirebaseStorageForOwnPhotos = false varsayımıyla)
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -478,7 +564,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
               ),
             ]
           ),
-        
+
         if (_processedImageBytesFromUbuntu == null && _selectedImageFileForUbuntu != null)
           _buildInfoCard(
             title: "Seçilen Fotoğraf (İşlenecek)",
@@ -507,7 +593,6 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
               label: const Text('Hasar Fotoğrafı Yükle'),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                // side: BorderSide(color: theme.colorScheme.primary), // Tema'dan gelecek
               ),
               onPressed: _isProcessingAndSaving ? null : _pickImageForUbuntu,
             ),
@@ -517,7 +602,6 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
   }
 
   Widget _buildOtherPartyPhotoDisplay(ThemeData theme) {
-    // Karşı tarafın Ubuntu ile işlenmiş fotoğrafı
     if (_otherPartyProcessedImageBase64FromUbuntu != null) {
       try {
         final Uint8List imageBytes = base64Decode(_otherPartyProcessedImageBase64FromUbuntu!);
@@ -543,19 +627,18 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
         return const Text("Fotoğraf görüntülenemedi.", style: TextStyle(color: Colors.red));
       }
     }
-    // Karşı tarafın Firebase'e yüklediği orijinal fotoğraflar (eğer bu akış varsa)
     if (_otherPartyFirebaseStorageImageUrls.isNotEmpty) {
       return GridView.builder(
           shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
           itemCount: _otherPartyFirebaseStorageImageUrls.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 6, mainAxisSpacing: 6),
           itemBuilder: (context, index) {
-              return InkWell( 
+              return InkWell(
                 onTap: () { /* TODO: Fotoğrafı büyütme implementasyonu */ },
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
                   child: Image.network(
-                    _otherPartyFirebaseStorageImageUrls[index], 
+                    _otherPartyFirebaseStorageImageUrls[index],
                     fit: BoxFit.cover,
                     loadingBuilder: (context, child, progress) => progress == null ? child : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                     errorBuilder: (context, error, stack) => const Icon(Icons.broken_image_outlined, size: 40),
@@ -568,141 +651,140 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
     return const Text('Karşı taraf henüz fotoğraf eklememiş veya fotoğraf türü desteklenmiyor.', style: TextStyle(fontStyle: FontStyle.italic));
   }
 
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tutanak Özeti ve Onay'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 80.0), // Buton için altta boşluk
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // --- SİZİN BİLGİLERİNİZ BÖLÜMÜ ---
-            _buildSectionHeader(context, "SİZİN BİLGİLERİNİZ", Icons.person_pin_rounded),
-            _buildInfoCard(
-              title: "Araç Bilgileriniz",
-              titleIcon: Icons.directions_car_filled_rounded,
-              children: [
-                _buildTextInfoRow('Marka', widget.vehicleInfo['brand']),
-                _buildTextInfoRow('Model', widget.vehicleInfo['model']),
-                _buildTextInfoRow('Plaka', widget.vehicleInfo['plate']),
-              ]
-            ),
-            const SizedBox(height: 12),
-            _buildInfoCard(
-              title: "Seçtiğiniz Hasar Bölgeleri",
-              titleIcon: Icons.car_crash_rounded,
-              children: [_buildRegionsDisplay(widget.selectedRegions, isOwn: true)]
-            ),
-            const SizedBox(height: 12),
-            _buildInfoCard(
-              title: "Hasar Fotoğrafı ve Notlar",
-              titleIcon: Icons.camera_alt_rounded,
-              children: [
-                _buildPhotoSelectionAndDisplayUI(),
-                const SizedBox(height: 20),
-                Text('Ek Notlarınız:', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _notesController,
-                  maxLines: 4,
-                  minLines: 2,
-                  decoration: InputDecoration( // Stil temadan gelecek
-                    hintText: 'Kaza ile ilgili eklemek istediğiniz detaylar, beyanınız...',
-                  ),
-                ),
-              ]
-            ),
-
-            // --- KARŞI TARAFIN BİLGİLERİ BÖLÜMÜ ---
-            _buildSectionHeader(context, "KARŞI TARAFIN BİLGİLERİ", Icons.people_alt_rounded),
-            _isLoadingOtherPartyData
-              ? const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 30.0), child: CircularProgressIndicator()))
-              : (_otherPartyUserData == null && _otherPartyVehicleData == null && _otherPartySelectedRegions.isEmpty && _otherPartyProcessedImageBase64FromUbuntu == null && _otherPartyFirebaseStorageImageUrls.isEmpty)
-                  ? _buildInfoCard(title: "Diğer Sürücü Bilgileri", children: [const Text('Karşı taraf henüz bilgi girişi yapmamış veya bilgiler alınamadı.', style: TextStyle(fontStyle: FontStyle.italic))])
-                  : Column(children: [
-                      if (_otherPartyUserData != null)
-                        _buildInfoCard(
-                          title: 'Diğer Sürücü',
-                          titleIcon: Icons.person_outline_rounded,
-                          children: [
-                            _buildTextInfoRow('Ad Soyad', '${_otherPartyUserData!['isim'] ?? ''} ${_otherPartyUserData!['soyisim'] ?? ''}'.trim()),
-                            _buildTextInfoRow('Telefon', _otherPartyUserData!['telefon'] as String?),
-                        ]),
-                      const SizedBox(height: 12),
-                      if (_otherPartyVehicleData != null)
-                        _buildInfoCard(
-                          title: 'Diğer Sürücünün Aracı',
-                          titleIcon: Icons.directions_car_outlined,
-                          children: [
-                            _buildTextInfoRow('Marka', _otherPartyVehicleData!['brand'] ?? _otherPartyVehicleData!['marka'] as String?),
-                            _buildTextInfoRow('Model', _otherPartyVehicleData!['model'] ?? _otherPartyVehicleData!['seri'] as String?),
-                            _buildTextInfoRow('Plaka', _otherPartyVehicleData!['plate'] ?? _otherPartyVehicleData!['plaka'] as String?),
-                        ]),
-                      const SizedBox(height: 12),
-                      _buildInfoCard(
-                        title: 'Diğer Sürücünün Seçtiği Hasar Bölge(leri)',
-                        titleIcon: Icons.car_crash_outlined,
-                        children: [_buildRegionsDisplay(_otherPartySelectedRegions, isOwn: false)],
-                      ),
-                      const SizedBox(height: 12),
-                       _buildInfoCard(
-                        title: 'Diğer Sürücünün Notları',
-                        titleIcon: Icons.notes_rounded,
-                        children: [Text(_otherPartyUserData?['${widget.isCreator ? "joiner" : "creator"}Notes']?.toString() ?? 'Karşı taraf not eklememiş.', style: const TextStyle(fontStyle: FontStyle.italic))],
-                      ),
-                      const SizedBox(height: 12),
-                      if (_otherPartyProcessedImageBase64FromUbuntu != null || _otherPartyFirebaseStorageImageUrls.isNotEmpty)
-                        _buildInfoCard(
-                          title: 'Diğer Sürücünün Hasar Fotoğraf(lar)ı',
-                          titleIcon: Icons.image_search_rounded,
-                          children: [_buildOtherPartyPhotoDisplay(theme)],
-                        ),
-                  ]),
-            
-            // --- ORTAK BİLGİLER BÖLÜMÜ ---
-            _buildSectionHeader(context, "ORTAK BİLGİLER", Icons.map_rounded),
-            _buildInfoCard(
-              title: 'Onaylanan Kaza Konumu',
-              titleIcon: Icons.location_on_rounded,
-              children: [
-                  SizedBox(
-                    height: 180, // Harita yüksekliği artırıldı
-                    child: AbsorbPointer(
-                      child: GoogleMap(
-                        initialCameraPosition: CameraPosition(target: widget.confirmedPosition, zoom: 16.5),
-                        markers: {Marker(markerId: const MarkerId('accidentLocation'), position: widget.confirmedPosition, infoWindow: const InfoWindow(title: "Kaza Yeri"))},
-                        scrollGesturesEnabled: false, zoomGesturesEnabled: false, rotateGesturesEnabled: false, tiltGesturesEnabled: false, mapToolbarEnabled: false,
-                      ),
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Tutanak Özeti ve Onay'),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 80.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildSectionHeader(context, "SİZİN BİLGİLERİNİZ", Icons.person_pin_rounded),
+              _buildInfoCard(
+                title: "Araç Bilgileriniz",
+                titleIcon: Icons.directions_car_filled_rounded,
+                children: [
+                  _buildTextInfoRow('Marka', widget.vehicleInfo['brand']),
+                  _buildTextInfoRow('Model', widget.vehicleInfo['model']),
+                  _buildTextInfoRow('Plaka', widget.vehicleInfo['plate']),
+                ]
+              ),
+              const SizedBox(height: 12),
+              _buildInfoCard(
+                title: "Seçtiğiniz Hasar Bölgeleri",
+                titleIcon: Icons.car_crash_rounded,
+                children: [_buildRegionsDisplay(widget.selectedRegions, isOwn: true)]
+              ),
+              const SizedBox(height: 12),
+              _buildInfoCard(
+                title: "Hasar Fotoğrafı ve Notlar",
+                titleIcon: Icons.camera_alt_rounded,
+                children: [
+                  _buildPhotoSelectionAndDisplayUI(),
+                  const SizedBox(height: 20),
+                  Text('Ek Notlarınız:', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _notesController,
+                    maxLines: 4,
+                    minLines: 2,
+                    decoration: InputDecoration(
+                      hintText: 'Kaza ile ilgili eklemek istediğiniz detaylar, beyanınız...',
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  _buildTextInfoRow('Enlem', widget.confirmedPosition.latitude.toStringAsFixed(6)),
-                  _buildTextInfoRow('Boylam', widget.confirmedPosition.longitude.toStringAsFixed(6)),
-             ]),
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
-      // Sayfanın altına sabitlenmiş gönderme butonu
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _isProcessingAndSaving
-          ? const Center(child: CircularProgressIndicator())
-          : ElevatedButton.icon(
-              icon: const Icon(Icons.send_rounded),
-              label: const Text('Tutanak Bilgilerimi Gönder ve Tamamla'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green.shade600, // Onay ve gönderme için yeşil renk
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                ]
               ),
-              onPressed: _handleReportSubmission,
-            ),
+
+              _buildSectionHeader(context, "KARŞI TARAFIN BİLGİLERİ", Icons.people_alt_rounded),
+              _isLoadingOtherPartyData
+                ? const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 30.0), child: CircularProgressIndicator()))
+                : (_otherPartyUserData == null && _otherPartyVehicleData == null && _otherPartySelectedRegions.isEmpty && _otherPartyProcessedImageBase64FromUbuntu == null && _otherPartyFirebaseStorageImageUrls.isEmpty)
+                    ? _buildInfoCard(title: "Diğer Sürücü Bilgileri", children: [const Text('Karşı taraf henüz bilgi girişi yapmamış veya bilgiler alınamadı.', style: TextStyle(fontStyle: FontStyle.italic))])
+                    : Column(children: [
+                        if (_otherPartyUserData != null)
+                          _buildInfoCard(
+                            title: 'Diğer Sürücü',
+                            titleIcon: Icons.person_outline_rounded,
+                            children: [
+                              _buildTextInfoRow('Ad Soyad', '${_otherPartyUserData!['isim'] ?? ''} ${_otherPartyUserData!['soyisim'] ?? ''}'.trim()),
+                              _buildTextInfoRow('Telefon', _otherPartyUserData!['telefon'] as String?),
+                          ]),
+                        const SizedBox(height: 12),
+                        if (_otherPartyVehicleData != null)
+                          _buildInfoCard(
+                            title: 'Diğer Sürücünün Aracı',
+                            titleIcon: Icons.directions_car_outlined,
+                            children: [
+                              _buildTextInfoRow('Marka', _otherPartyVehicleData!['brand'] ?? _otherPartyVehicleData!['marka'] as String?),
+                              _buildTextInfoRow('Model', _otherPartyVehicleData!['model'] ?? _otherPartyVehicleData!['seri'] as String?),
+                              _buildTextInfoRow('Plaka', _otherPartyVehicleData!['plate'] ?? _otherPartyVehicleData!['plaka'] as String?),
+                          ]),
+                        const SizedBox(height: 12),
+                        _buildInfoCard(
+                          title: 'Diğer Sürücünün Seçtiği Hasar Bölge(leri)',
+                          titleIcon: Icons.car_crash_outlined,
+                          children: [_buildRegionsDisplay(_otherPartySelectedRegions, isOwn: false)],
+                        ),
+                        const SizedBox(height: 12),
+                         _buildInfoCard(
+                          title: 'Diğer Sürücünün Notları',
+                          titleIcon: Icons.notes_rounded,
+                          children: [Text(_otherPartyUserData?['${widget.isCreator ? "joiner" : "creator"}Notes']?.toString() ?? 'Karşı taraf not eklememiş.', style: const TextStyle(fontStyle: FontStyle.italic))],
+                        ),
+                        const SizedBox(height: 12),
+                        if (_otherPartyProcessedImageBase64FromUbuntu != null || _otherPartyFirebaseStorageImageUrls.isNotEmpty)
+                          _buildInfoCard(
+                            title: 'Diğer Sürücünün Hasar Fotoğraf(lar)ı',
+                            titleIcon: Icons.image_search_rounded,
+                            children: [_buildOtherPartyPhotoDisplay(theme)],
+                          ),
+                    ]),
+
+              _buildSectionHeader(context, "ORTAK BİLGİLER", Icons.map_rounded),
+              _buildInfoCard(
+                title: 'Onaylanan Kaza Konumu',
+                titleIcon: Icons.location_on_rounded,
+                children: [
+                    SizedBox(
+                      height: 180,
+                      child: AbsorbPointer(
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(target: widget.confirmedPosition, zoom: 16.5),
+                          markers: {Marker(markerId: const MarkerId('accidentLocation'), position: widget.confirmedPosition, infoWindow: const InfoWindow(title: "Kaza Yeri"))},
+                          scrollGesturesEnabled: false, zoomGesturesEnabled: false, rotateGesturesEnabled: false, tiltGesturesEnabled: false, mapToolbarEnabled: false,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _buildAddressInfoRow(),
+               ]),
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: _isProcessingAndSaving
+            ? const Center(child: CircularProgressIndicator())
+            : ElevatedButton.icon(
+                icon: const Icon(Icons.send_rounded),
+                label: const Text('Tutanak Bilgilerimi Gönder ve Tamamla'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade600,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                onPressed: _handleReportSubmission,
+              ),
+        ),
       ),
     );
   }

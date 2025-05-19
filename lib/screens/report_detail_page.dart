@@ -6,12 +6,33 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:tutanak/screens/pdf_viewer_page.dart';
-import 'package:tutanak/models/crash_region.dart'; // CrashRegion enum'ınızın doğru yolu
+import 'package:tutanak/models/crash_region.dart';
+import 'package:geocoding/geocoding.dart'; // Eklendi
 
-class ReportDetailPage extends StatelessWidget {
+class ReportDetailPage extends StatefulWidget { // StatefulWidget olarak değiştirildi
   final String recordId;
 
   const ReportDetailPage({Key? key, required this.recordId}) : super(key: key);
+
+  @override
+  _ReportDetailPageState createState() => _ReportDetailPageState();
+}
+
+class _ReportDetailPageState extends State<ReportDetailPage> { // State sınıfı oluşturuldu
+  String? _address;
+  bool _isFetchingAddress = false; // Başlangıçta false, veri gelince kontrol edilecek
+  String? _addressError;
+  Map<String, dynamic>? _recordData; // Firestore'dan gelen veriyi tutmak için
+
+  @override
+  void initState() {
+    super.initState();
+    // StreamBuilder kullandığımız için, adres çekme işlemini StreamBuilder'ın
+    // snapshot'ı veri döndürdüğünde tetikleyebiliriz veya doğrudan snapshot.data üzerinden
+    // formattedAddress alanını okuyabiliriz.
+    // Ya da, ilk veri geldiğinde bir kerelik adres çekme işlemi yapabiliriz.
+    // Şimdilik, adres bilgisini StreamBuilder içinden almayı deneyelim.
+  }
 
   Future<String> _getUserFullName(String? userId) async {
     if (userId == null || userId.isEmpty) return "Bilinmiyor";
@@ -31,16 +52,13 @@ class ReportDetailPage extends StatelessWidget {
     if (timestamp == null) return 'Belirtilmemiş';
     final locale = Localizations.localeOf(context).toString();
     try {
-      // initializeDateFormatting çağrısı main.dart'ta yapıldığı için burada tekrar gerekmez.
       return DateFormat('dd MMMM yyyy, HH:mm', locale).format(timestamp.toDate());
     } catch (e) {
-      // Fallback to default format if locale specific formatting fails
       print("Tarih formatlama hatası (locale: $locale): $e");
       return DateFormat('dd.MM.yyyy HH:mm').format(timestamp.toDate());
     }
   }
 
-  // _regionLabel metodu bu sınıfa taşındı
   String _regionLabel(CrashRegion region) {
     switch (region) {
       case CrashRegion.frontLeft:   return 'Ön Sol';
@@ -51,9 +69,75 @@ class ReportDetailPage extends StatelessWidget {
       case CrashRegion.rearLeft:    return 'Arka Sol';
       case CrashRegion.rearCenter:  return 'Arka Orta';
       case CrashRegion.rearRight:   return 'Arka Sağ';
-      default: return region.name; // Enum adını döndürür (örn: "frontLeft")
+      default: return region.name;
     }
   }
+
+  // report_summary_page.dart'daki adres çekme fonksiyonunun bir benzeri
+  Future<void> _fetchAddressFromLatLng(double latitude, double longitude) async {
+    if (!mounted) return;
+    print("report_detail_page: Adres çekme işlemi başlıyor... Enlem: $latitude, Boylam: $longitude");
+    setState(() {
+      _isFetchingAddress = true;
+      _addressError = null;
+      _address = null; // Önceki adresi temizle
+    });
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+      print("report_detail_page: Placemarks alındı: ${placemarks.length} adet");
+
+      if (placemarks.isNotEmpty && mounted) {
+        final Placemark place = placemarks.first;
+        print("report_detail_page: İlk placemark: ${place.toJson()}");
+
+        String street = place.street ?? '';
+        String thoroughfare = place.thoroughfare ?? '';
+        String subLocality = place.subLocality ?? '';
+        String locality = place.locality ?? '';
+        String administrativeArea = place.administrativeArea ?? '';
+        String postalCode = place.postalCode ?? '';
+
+        List<String> addressParts = [];
+        if (street.isNotEmpty) addressParts.add(street);
+        if (thoroughfare.isNotEmpty && !street.toLowerCase().contains(thoroughfare.toLowerCase())) {
+           addressParts.add(thoroughfare);
+        }
+        if (subLocality.isNotEmpty) addressParts.add(subLocality);
+        if (locality.isNotEmpty) addressParts.add(locality);
+        if (administrativeArea.isNotEmpty) addressParts.add(administrativeArea);
+        if (postalCode.isNotEmpty) addressParts.add(postalCode);
+
+        String formattedAddress = addressParts.where((part) => part.isNotEmpty).join(', ');
+        formattedAddress = formattedAddress.replaceAll(RegExp(r',\s*,'), ', ').replaceAll(RegExp(r'^[\s,]+|[\s,]+$'), '');
+
+        print("report_detail_page: Formatlanmış Adres: $formattedAddress");
+        setState(() {
+          _address = formattedAddress.isNotEmpty ? formattedAddress : "Adres detayı bulunamadı.";
+        });
+      } else if (mounted) {
+        print("report_detail_page: Placemark bulunamadı.");
+        setState(() {
+          _address = "Adres bilgisi bulunamadı.";
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        print("report_detail_page: Adres çevirme hatası (catch bloğu): $e");
+        setState(() {
+          _addressError = "Adres alınamadı: ${e.toString().substring(0, (e.toString().length > 50) ? 50 : e.toString().length)}...";
+          _address = null;
+        });
+      }
+    } finally {
+      if (mounted) {
+        print("report_detail_page: Adres çekme işlemi tamamlandı. _isFetchingAddress: false, Adres: $_address, Hata: $_addressError");
+        setState(() {
+          _isFetchingAddress = false;
+        });
+      }
+    }
+  }
+
 
   Widget _buildSectionTitle(BuildContext context, String title, IconData icon, Color color) {
     final theme = Theme.of(context);
@@ -127,6 +211,73 @@ class ReportDetailPage extends StatelessWidget {
     );
   }
 
+ Widget _buildAddressInfoRow(Map<String, dynamic> recordData) {
+    final theme = Theme.of(context);
+    String? formattedAddressFromFirestore = recordData['formattedAddress'] as String?;
+    final LatLng? accidentLocation = (recordData['latitude'] != null && recordData['longitude'] != null)
+        ? LatLng(recordData['latitude'] as double, recordData['longitude'] as double)
+        : null;
+
+    // Eğer Firestore'da adres varsa ve daha önce çekilmemişse veya farklıysa
+    if (formattedAddressFromFirestore != null && formattedAddressFromFirestore.isNotEmpty) {
+      if (_address == null || _address != formattedAddressFromFirestore) {
+         // Firestore'daki adresi state'e ata, böylece tekrar çekmeye gerek kalmaz.
+         // Bu, widget yeniden build edildiğinde adresin korunmasını sağlar.
+         WidgetsBinding.instance.addPostFrameCallback((_) {
+            if(mounted) {
+                setState(() {
+                    _address = formattedAddressFromFirestore;
+                    _isFetchingAddress = false;
+                    _addressError = null;
+                });
+            }
+         });
+      }
+      return _buildTextInfoRow(context, 'Kaza Adresi', _address);
+    }
+    // Firestore'da adres yoksa ama enlem/boylam varsa ve daha önce çekilmemişse
+    else if (accidentLocation != null && _address == null && !_isFetchingAddress && _addressError == null) {
+        // Adres çekme işlemini burada tetikle.
+        // Bu, StreamBuilder'dan veri ilk geldiğinde çalışır.
+        // _isFetchingAddress kontrolü sonsuz döngüyü engeller.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+             _fetchAddressFromLatLng(accidentLocation.latitude, accidentLocation.longitude);
+        });
+    }
+
+    // Adres çekiliyorsa yükleme göstergesi
+    if (_isFetchingAddress) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('Kaza Adresi:', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            const SizedBox(width: 8),
+            const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            const SizedBox(width: 8),
+            Expanded(child: Text("Adres yükleniyor...", style: theme.textTheme.bodySmall)),
+          ],
+        ),
+      );
+    }
+    // Hata varsa hata mesajı
+    if (_addressError != null && _addressError!.isNotEmpty) {
+      return _buildTextInfoRow(context, 'Kaza Adresi', _addressError);
+    }
+    // Başarılı bir şekilde adres çekildiyse veya Firestore'dan geldiyse göster
+    if (_address != null && _address!.isNotEmpty) {
+      return _buildTextInfoRow(context, 'Kaza Adresi', _address);
+    }
+    // Hiçbir bilgi yoksa veya enlem/boylam da yoksa
+    if (accidentLocation == null) {
+        return _buildTextInfoRow(context, 'Kaza Adresi', 'Konum bilgisi bulunamadı.');
+    }
+    // Eğer adres çekilemediyse ve hata da yoksa, son çare olarak enlem/boylam
+    return _buildTextInfoRow(context, 'Kaza Konumu (Enlem/Boylam)', '${accidentLocation.latitude.toStringAsFixed(4)}, ${accidentLocation.longitude.toStringAsFixed(4)}');
+  }
+
+
   Widget _buildPhotoDisplay(BuildContext context, String? base64Image, List<dynamic>? detections, String partyName) {
     final theme = Theme.of(context);
     if (base64Image == null || base64Image.isEmpty) {
@@ -181,7 +332,7 @@ class ReportDetailPage extends StatelessWidget {
     }
     Set<CrashRegion> regions = regionNames.map((name) {
       try { return CrashRegion.values.byName(name.toString()); }
-      catch(e) { return null; }
+      catch(e) { print("Bölge enum parse hatası: $name, Hata: $e"); return null; }
     }).whereType<CrashRegion>().toSet();
 
     if (regions.isEmpty) {
@@ -194,7 +345,7 @@ class ReportDetailPage extends StatelessWidget {
     return Wrap(
       spacing: 8, runSpacing: 6,
       children: regions.map((r) => Chip(
-        label: Text(_regionLabel(r)), // _regionLabel artık bu sınıfta tanımlı
+        label: Text(_regionLabel(r)),
         backgroundColor: theme.colorScheme.errorContainer.withOpacity(0.7),
         labelStyle: TextStyle(color: theme.colorScheme.onErrorContainer),
         avatar: Icon(Icons.car_crash_outlined, size: 18, color: theme.colorScheme.onErrorContainer),
@@ -207,17 +358,19 @@ class ReportDetailPage extends StatelessWidget {
     BuildContext context,
     ThemeData theme,
     Map<String, dynamic> recordData,
-    String rolePrefix,
+    String rolePrefix, // Bu parametre zaten vardı ve doğru olan bu.
     String sectionTitle,
     IconData sectionIcon,
   ) {
     final String? userId = recordData['${rolePrefix}Uid'] as String?;
     final Map<String, dynamic>? vehicleInfo = recordData['${rolePrefix}VehicleInfo'] as Map<String, dynamic>? ?? {};
     final String? notes = recordData['${rolePrefix}Notes'] as String?;
-    final List<dynamic>? damageRegions = recordData['${rolePrefix}DamageRegions'] as List<dynamic>?; // List<String> yerine List<dynamic>
+    final List<dynamic>? damageRegions = recordData['${rolePrefix}DamageRegions'] as List<dynamic>?;
     final String? processedPhotoBase64 = recordData['${rolePrefix}ProcessedDamageImageBase64'] as String?;
     final List<dynamic>? detections = recordData['${rolePrefix}DetectionResults'] as List<dynamic>?;
-    final Timestamp? submissionTime = recordData['${rolePrefix}InfoSubmittedTimestamp'] as Timestamp?;
+    // DÜZELTME: userRolePrefix yerine rolePrefix kullanıldı
+    final Timestamp? submissionTime = recordData['${rolePrefix}LastUpdateTimestamp'] as Timestamp?
+        ?? recordData['${rolePrefix}InfoSubmittedTimestamp'] as Timestamp?; // Eski isme de bakabiliriz
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,28 +383,37 @@ class ReportDetailPage extends StatelessWidget {
               if (userSnapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: Padding(padding: EdgeInsets.all(8.0), child: CircularProgressIndicator(strokeWidth: 2)));
               }
+              // Kullanıcının telefon numarasını userDoc'tan (yani _userData Firestore'dan) veya doğrudan recordData'dan almayı dene
+              String? userPhone;
+              if (_recordData != null && _recordData!['${rolePrefix}UserData'] != null && _recordData!['${rolePrefix}UserData']['telefon'] != null) {
+                userPhone = _recordData!['${rolePrefix}UserData']['telefon'] as String?;
+              } else if (userSnapshot.data != "Bilinmiyor" && userSnapshot.data != "Kullanıcı Bulunamadı") {
+                // Eğer _getUserFullName başarılı olduysa ve _recordData içinde yoksa, Firestore'dan çekmeyi deneyebiliriz
+                // ancak bu _getUserFullName içinde zaten yapılmalı. Şimdilik null bırakalım veya "Belirtilmemiş" diyelim.
+                // userPhone = "Firestore'dan çekilebilir"; // Veya null
+              }
+
+
               return _buildInfoCard(
                 context: context,
                 title: "Sürücü Bilgileri",
                 titleIcon: Icons.person_outline_rounded,
                 children: [
                   _buildTextInfoRow(context, "Ad Soyad", userSnapshot.data ?? "Yüklenemedi", isBoldValue: true),
-                  // Telefon gibi diğer bilgiler de users'dan çekilebilir veya recordData'da varsa gösterilebilir
-                  if (recordData['${rolePrefix}UserPhone'] != null) // Örnek bir alan adı
-                     _buildTextInfoRow(context, "Telefon", recordData['${rolePrefix}UserPhone'] as String?),
+                  _buildTextInfoRow(context, "Telefon", userPhone ?? "-"),
                 ],
               );
             },
           ),
-        const SizedBox(height: 4), // Kartlar arası hafif boşluk
+        const SizedBox(height: 4),
         _buildInfoCard(
           context: context,
           title: "Araç Bilgileri",
           titleIcon: Icons.directions_car_outlined,
           children: [
-            _buildTextInfoRow(context, "Marka", vehicleInfo?['brand']?.toString()),
+            _buildTextInfoRow(context, "Marka", vehicleInfo?['brand']?.toString() ?? vehicleInfo?['marka']?.toString()),
             _buildTextInfoRow(context, "Model/Seri", vehicleInfo?['model']?.toString() ?? vehicleInfo?['seri']?.toString()),
-            _buildTextInfoRow(context, "Plaka", vehicleInfo?['plate']?.toString(), isBoldValue: true),
+            _buildTextInfoRow(context, "Plaka", vehicleInfo?['plate']?.toString() ?? vehicleInfo?['plaka']?.toString(), isBoldValue: true),
             if (vehicleInfo?['modelYili'] != null)
                 _buildTextInfoRow(context, "Model Yılı", vehicleInfo?['modelYili']?.toString()),
             if (vehicleInfo?['kullanim'] != null)
@@ -269,7 +431,7 @@ class ReportDetailPage extends StatelessWidget {
         _buildInfoCard(
           context: context,
           title: "Sürücü Notları ve Beyanı",
-          titleIcon: Icons.edit_note_rounded, // İkon değiştirildi
+          titleIcon: Icons.edit_note_rounded,
           children: [
             Text(notes?.isNotEmpty == true ? notes! : "Eklenmiş bir not/beyan bulunmuyor.", style: theme.textTheme.bodyLarge?.copyWith(fontStyle: notes?.isNotEmpty == true ? FontStyle.normal : FontStyle.italic, height: 1.5)),
           ],
@@ -309,7 +471,7 @@ class ReportDetailPage extends StatelessWidget {
         title: const Text("Tutanak Detayı"),
       ),
       body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance.collection('records').doc(recordId).snapshots(),
+        stream: FirebaseFirestore.instance.collection('records').doc(widget.recordId).snapshots(),
         builder: (context, AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -321,30 +483,50 @@ class ReportDetailPage extends StatelessWidget {
             return const Center(child: Text("Rapor bulunamadı."));
           }
 
-          final recordData = snapshot.data!.data()!;
+          _recordData = snapshot.data!.data()!; // State'e veriyi ata
 
-          final String? pdfTitleFromRecord = recordData['title'] as String?;
-          final String? pdfUrl = recordData['pdfUrl'] as String?;
-          final String status = recordData['status'] as String? ?? "Bilinmiyor";
-          final Timestamp? createdAt = recordData['createdAt'] as Timestamp?;
-          final Timestamp? finalizedAt = recordData['reportFinalizedTimestamp'] as Timestamp?;
-          final LatLng? accidentLocation = (recordData['latitude'] != null && recordData['longitude'] != null)
-              ? LatLng(recordData['latitude'] as double, recordData['longitude'] as double)
+          final String? pdfTitleFromRecord = _recordData!['title'] as String?;
+          final String? pdfUrl = _recordData!['pdfUrl'] as String?;
+          final String status = _recordData!['status'] as String? ?? "Bilinmiyor";
+          final Timestamp? createdAt = _recordData!['createdAt'] as Timestamp?;
+          final Timestamp? finalizedAt = _recordData!['reportFinalizedTimestamp'] as Timestamp?;
+          final LatLng? accidentLocation = (_recordData!['latitude'] != null && _recordData!['longitude'] != null)
+              ? LatLng(_recordData!['latitude'] as double, _recordData!['longitude'] as double)
               : null;
 
+          // Adres çekme işlemini burada, veri geldikten sonra tetikleyebiliriz.
+          // Sadece Firestore'da adres yoksa ve enlem/boylam varsa çek.
+          String? formattedAddressFromFirestore = _recordData!['formattedAddress'] as String?;
+          if (formattedAddressFromFirestore == null && accidentLocation != null && _address == null && !_isFetchingAddress) {
+             WidgetsBinding.instance.addPostFrameCallback((_) {
+                 _fetchAddressFromLatLng(accidentLocation.latitude, accidentLocation.longitude);
+             });
+          } else if (formattedAddressFromFirestore != null && _address == null) {
+            // Firestore'dan gelen adresi doğrudan state'e ata
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+                if(mounted) {
+                    setState(() {
+                        _address = formattedAddressFromFirestore;
+                        _isFetchingAddress = false; // Zaten çekilmiş, tekrar çekme
+                    });
+                }
+            });
+          }
+
+
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(12.0), // Genel padding azaltıldı
+            padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildInfoCard(
                   context: context,
                   title: "Genel Tutanak Bilgileri",
-                  titleIcon: Icons.article_outlined, // İkon değiştirildi
-                  titleColor: theme.colorScheme.onSurface, // Başlık rengi daha nötr
-                  cardColor: theme.colorScheme.surfaceVariant.withOpacity(0.7), // Farklı bir kart rengi
+                  titleIcon: Icons.article_outlined,
+                  titleColor: theme.colorScheme.onSurface,
+                  cardColor: theme.colorScheme.surfaceVariant.withOpacity(0.7),
                   children: [
-                    _buildTextInfoRow(context, "Tutanak ID", recordId, isBoldValue: true),
+                    _buildTextInfoRow(context, "Tutanak ID", widget.recordId, isBoldValue: true),
                     _buildTextInfoRow(context, "Durum", status, isBoldValue: true),
                     if (createdAt != null)
                       _buildTextInfoRow(context, "Oluşturulma T.", _formatTimestamp(createdAt, context)),
@@ -369,14 +551,14 @@ class ReportDetailPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => PdfViewerPage(pdfUrl: pdfUrl, title: pdfTitleFromRecord ?? "Tutanak PDF"), // Düzeltilmiş pdfTitle kullanımı
+                              builder: (context) => PdfViewerPage(pdfUrl: pdfUrl, title: pdfTitleFromRecord ?? "Tutanak PDF"),
                             ),
                           );
                         },
                       ),
                     ),
                   ),
-                
+
                 if (accidentLocation != null)
                   _buildInfoCard(
                     context: context,
@@ -384,39 +566,46 @@ class ReportDetailPage extends StatelessWidget {
                     titleIcon: Icons.map_rounded,
                     titleColor: theme.colorScheme.onSurface,
                     cardColor: theme.colorScheme.surfaceVariant.withOpacity(0.7),
-                    padding: const EdgeInsets.fromLTRB(0, 16, 0, 0), // Harita için padding ayarı
+                    padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
                     children: [
                       SizedBox(
-                        height: 220, // Harita yüksekliği biraz daha artırıldı
+                        height: 220,
                         child: GoogleMap(
-                          initialCameraPosition: CameraPosition(target: accidentLocation, zoom: 16.5), // Zoom artırıldı
-                          markers: {Marker(markerId: MarkerId(recordId), position: accidentLocation, infoWindow: const InfoWindow(title: "Kaza Yeri"))},
-                          scrollGesturesEnabled: true, // Kullanıcı haritayı kaydırabilsin
-                          zoomGesturesEnabled: true, // Kullanıcı zoom yapabilsin
-                          mapToolbarEnabled: true, // Google Haritalar uygulamasında açma butonu aktif
+                          initialCameraPosition: CameraPosition(target: accidentLocation, zoom: 16.5),
+                          markers: {Marker(markerId: MarkerId(widget.recordId), position: accidentLocation, infoWindow: const InfoWindow(title: "Kaza Yeri"))},
+                          scrollGesturesEnabled: true,
+                          zoomGesturesEnabled: true,
+                          mapToolbarEnabled: true,
                         ),
                       ),
                        Padding(
                          padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 16.0),
                          child: Column(
                            children: [
-                              _buildTextInfoRow(context, 'Enlem', accidentLocation.latitude.toStringAsFixed(6)),
-                              _buildTextInfoRow(context, 'Boylam', accidentLocation.longitude.toStringAsFixed(6)),
+                              _buildAddressInfoRow(_recordData!), // Adres satırı
                            ],
                          ),
                        ),
                     ]
+                  )
+                else
+                  _buildInfoCard(
+                    context: context,
+                    title: "Kaza Konumu",
+                    titleIcon: Icons.map_rounded,
+                    children: [_buildTextInfoRow(context, 'Kaza Adresi', 'Konum bilgisi kaydedilmemiş.')]
                   ),
 
-                _buildPartyInfoSection(context, theme, recordData, "creator", "Tutanak Oluşturan Taraf", Icons.person_pin_circle_rounded),
-                
+
+                _buildPartyInfoSection(context, theme, _recordData!, "creator", "Tutanak Oluşturan Taraf", Icons.person_pin_circle_rounded),
+
                 const SizedBox(height: 10),
                 Divider(thickness: 1, color: theme.dividerColor.withOpacity(0.6), height: 30, indent: 20, endIndent: 20),
                 const SizedBox(height: 10),
 
-                _buildPartyInfoSection(context, theme, recordData, "joiner", "Tutanağa Katılan Taraf", Icons.group_rounded),
-              
-                const SizedBox(height: 20), // Sayfa sonu için boşluk
+                _buildPartyInfoSection(context, theme, _recordData!, "joiner", "Tutanağa Katılan Taraf", Icons.group_rounded),
+
+                const SizedBox(height: 20),
               ],
             ),
           );
