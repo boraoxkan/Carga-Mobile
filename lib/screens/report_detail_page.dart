@@ -28,7 +28,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   Map<String, dynamic>? _recordData;
   bool _isGeneratingPdf = false;
 
-  final String _pdfServerBaseUrl = "http://100.110.23.124:5001"; // SUNUCU IP ADRESİNİZİ GÜNCELLEYİN
+  final String _pdfServerBaseUrl = "http://100.110.23.124:5001";
   final String _pdfGenerationEndpoint = "/generate_accident_report_pdf";
 
   @override
