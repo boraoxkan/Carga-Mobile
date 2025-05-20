@@ -83,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDrawerHeader(ThemeData theme) {
-    if (_isUserDataLoading || _currentUser == null) { // _currentUser null kontrolü eklendi
+    if (_isUserDataLoading || _currentUser == null) { 
       return DrawerHeader(
         decoration: BoxDecoration(
           color: theme.colorScheme.primaryContainer,
@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
         style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onPrimaryContainer.withOpacity(0.8)),
       ),
       currentAccountPicture: CircleAvatar(
-        radius: 30, // Avatarın UserAccountsDrawerHeader içindeki boyutuna göre
+        radius: 30, 
         backgroundColor: theme.colorScheme.secondary,
         foregroundColor: theme.colorScheme.onSecondary,
         backgroundImage: profileImageUrl != null ? NetworkImage(profileImageUrl) : null,
@@ -137,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // AccountPage'e onProfileUpdated callback'ini iletiyoruz.
         // Bu callback, AccountPage'de profil güncellendiğinde HomeScreen'deki _fetchUserData'yı tetikler.
         return AccountPage(onProfileUpdated: () {
-          _fetchUserData(); // Kullanıcı verilerini ve dolayısıyla Drawer'ı güncelle
+          _fetchUserData(); 
         });
       case 'vehicles':
         return const VehiclesPage();
@@ -151,7 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHomePageContent(ThemeData theme) {
     String userName = _userData?['isim'] ?? 'Kullanıcı';
-    // ... (Bu metot öncekiyle aynı kalabilir)
      return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -159,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Icon(
-            Icons.shield_outlined, // Tematik bir ikon
+            Icons.shield_outlined, 
             size: 80,
             color: theme.colorScheme.primary,
           ),
@@ -251,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (pageKey == 'logout') {
             _logout();
           } else {
-            if (mounted) { // Navigator.pop öncesi setState için kontrol
+            if (mounted) { 
               setState(() {
                 _currentPageKey = pageKey;
               });
@@ -267,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
-    if(mounted) { // Navigator işlemleri öncesi mounted kontrolü
+    if(mounted) { 
       Navigator.pushReplacementNamed(context, '/login');
     }
   }

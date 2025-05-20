@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:flutter/services.dart'; // FilteringTextInputFormatter için
-import 'package:tutanak/services/car_service.dart'; // CarService importu
-import 'package:intl/intl.dart'; // DateFormat için eklendi
+import 'package:flutter/services.dart';
+import 'package:tutanak/services/car_service.dart'; 
+import 'package:intl/intl.dart'; 
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'vehicle_details_page.dart';
 
@@ -45,7 +45,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
           .collection('users')
           .doc(user.uid)
           .collection('vehicles')
-          .orderBy('createdAt', descending: true) // createdAt alanına göre sırala
+          .orderBy('createdAt', descending: true) 
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -227,7 +227,7 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
   List<String> _brands = [];
   List<String> _series = [];
   List<String> _models = [];
-  final List<String> _usageOptions = ['Bireysel', 'Ticari', 'Resmi', 'Diğer']; // Kullanım şekilleri güncellendi
+  final List<String> _usageOptions = ['Bireysel', 'Ticari', 'Resmi', 'Diğer'];
 
   String? _selectedBrand;
   String? _selectedSeries;
@@ -237,25 +237,25 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
   bool _isLoadingBrands = true;
   bool _isLoadingSeries = false;
   bool _isLoadingModels = false;
-  bool _isSaving = false; // Kaydetme işlemi için
+  bool _isSaving = false; 
 
   final TextEditingController _yearController = TextEditingController();
   final TextEditingController _plateController = TextEditingController();
-  final TextEditingController _chassisNoController = TextEditingController(); // Şasi No
-  final TextEditingController _policyHolderNameController = TextEditingController(); // Sigortalı Adı Soyadı
-  final TextEditingController _policyHolderIdController = TextEditingController(); // Sigortalı TC/Vergi No
-  final TextEditingController _insuranceCompanyController = TextEditingController(); // Sigorta Şirketi
-  final TextEditingController _agencyNoController = TextEditingController(); // Acente No
-  final TextEditingController _policyNoController = TextEditingController(); // Poliçe No
-  final TextEditingController _tramerNoController = TextEditingController(); // TRAMER Belge No
-  DateTime? _policyStartDate; // Poliçe Başlangıç Tarihi
-  DateTime? _policyEndDate; // Poliçe Bitiş Tarihi
+  final TextEditingController _chassisNoController = TextEditingController(); 
+  final TextEditingController _policyHolderNameController = TextEditingController(); 
+  final TextEditingController _policyHolderIdController = TextEditingController(); 
+  final TextEditingController _insuranceCompanyController = TextEditingController(); 
+  final TextEditingController _agencyNoController = TextEditingController(); 
+  final TextEditingController _policyNoController = TextEditingController(); 
+  final TextEditingController _tramerNoController = TextEditingController(); 
+  DateTime? _policyStartDate; 
+  DateTime? _policyEndDate; 
 
   // Yeşil Kart bilgileri için controller'lar (opsiyonel)
   final TextEditingController _greenCardNoController = TextEditingController();
   final TextEditingController _greenCardCountryController = TextEditingController();
   final TextEditingController _greenCardPassportNoController = TextEditingController();
-  bool _hasGreenCard = false; // Yeşil Kart var mı?
+  bool _hasGreenCard = false; 
 
   @override
   void initState() {
@@ -315,7 +315,7 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
       helpText: isStartDate ? 'Poliçe Başlangıç Tarihi' : 'Poliçe Bitiş Tarihi',
       confirmText: 'TAMAM',
       cancelText: 'İPTAL',
-      locale: const Locale('tr', 'TR'), // Tarih seçiciyi Türkçe yapmak için
+      locale: const Locale('tr', 'TR'), 
     );
     if (picked != null && mounted) {
       setState(() {
@@ -323,13 +323,13 @@ class __AddVehicleDialogState extends State<_AddVehicleDialog> {
           _policyStartDate = picked;
           // Başlangıç tarihi, bitiş tarihinden sonra olamaz
           if (_policyEndDate != null && _policyStartDate!.isAfter(_policyEndDate!)) {
-            _policyEndDate = null; // Bitiş tarihini sıfırla veya başlangıç tarihine ayarla
+            _policyEndDate = null; 
           }
         } else {
           _policyEndDate = picked;
            // Bitiş tarihi, başlangıç tarihinden önce olamaz
           if (_policyStartDate != null && _policyEndDate!.isBefore(_policyStartDate!)) {
-            _policyStartDate = null; // Başlangıç tarihini sıfırla veya bitiş tarihine ayarla
+            _policyStartDate = null;
              ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Bitiş tarihi başlangıç tarihinden önce olamaz. Lütfen başlangıç tarihini de kontrol edin.')),
             );

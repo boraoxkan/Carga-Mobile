@@ -1,7 +1,7 @@
 // lib/screens/signup_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tutanak/models/user.dart'; // register fonksiyonunun bulunduğu dosya
+import 'package:tutanak/models/user.dart'; 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -15,7 +15,6 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Form alanları için controller'lar
   final TextEditingController nameController = TextEditingController();
   final TextEditingController surnameController = TextEditingController();
   final TextEditingController tcNoController = TextEditingController();
@@ -23,12 +22,10 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
-
-  // YENİ EKLENEN CONTROLLER'LAR
   final TextEditingController driverLicenseNoController = TextEditingController();
   final TextEditingController driverLicenseClassController = TextEditingController();
   final TextEditingController driverLicenseIssuePlaceController = TextEditingController();
-  final TextEditingController addressController = TextEditingController(); // Sürücü Adresi
+  final TextEditingController addressController = TextEditingController(); 
 
   // ... (validateEmail, validatePassword, validateConfirmPassword, _inputDecoration metotları aynı kalabilir) ...
   // _inputDecoration fonksiyonu zaten genel amaçlı, yeni alanlar için de kullanılabilir.

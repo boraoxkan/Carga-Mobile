@@ -80,15 +80,15 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea( // Ekran çentikleri vb. için
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0), // Daha fazla padding
+            padding: const EdgeInsets.all(24.0), 
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch, // Butonları genişletmek için
+                crossAxisAlignment: CrossAxisAlignment.stretch, 
                 children: [
                   Icon(
-                    Icons.gavel_rounded, // Splash ile tutarlı ikon
+                    Icons.gavel_rounded, 
                     size: 80,
                     color: colorScheme.primary,
                   ),
@@ -109,15 +109,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: emailController,
                     decoration: InputDecoration(
                       labelText: 'E-posta Adresiniz',
-                      prefixIcon: Icon(Icons.email_outlined, color: colorScheme.primary),
-                      // hintText: 'ornek@eposta.com', // main.dart'taki fillColor ile daha iyi görünür
+                      prefixIcon: Icon(Icons.email_outlined, color: colorScheme.primary)
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'E-posta adresinizi giriniz.';
                       }
-                      if (!value.contains('@') || !value.contains('.')) { // Daha basit bir @ ve . kontrolü
+                      if (!value.contains('@') || !value.contains('.')) { 
                         return 'Geçerli bir e-posta adresi giriniz.';
                       }
                       return null;
@@ -148,8 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         return 'Şifrenizi giriniz.';
                       }
                       // if (value.length < 6) { // İsteğe bağlı: minimum şifre uzunluğu
-                      //   return 'Şifre en az 6 karakter olmalıdır.';
-                      // }
+
                       return null;
                     },
                   ),
@@ -159,7 +157,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {
-                        // TODO: Şifremi unuttum akışını implemente et
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Şifremi Unuttum özelliği henüz aktif değil.')),
                         );

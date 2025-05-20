@@ -28,8 +28,8 @@ class NewRecordWarningPage extends StatelessWidget {
           ],
         ),
       );
-      if (confirmed == true) { // Explicitly check for true
-        if (await canLaunchUrl(launchUri)) { // Güvenlik için canLaunchUrl kontrolü kalsın
+      if (confirmed == true) { 
+        if (await canLaunchUrl(launchUri)) { 
             await launchUrl(launchUri);
         } else {
             if (context.mounted) {
@@ -69,8 +69,6 @@ class NewRecordWarningPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(isJoining ? "Tutanağa Dahil Ol" : "Yeni Tutanak Oluştur"),
-        // elevation: 0, // Tema'dan gelecek
-        // backgroundColor: Colors.transparent, // Tema'dan gelecek
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -79,11 +77,10 @@ class NewRecordWarningPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Card(
-              elevation: 0, // Daha modern, gölgesiz bir görünüm için veya temadan gelen değeri kullan
-              color: theme.colorScheme.surfaceVariant.withOpacity(0.5), // Hafif farklı bir arka plan
+              elevation: 0, 
+              color: theme.colorScheme.surfaceVariant.withOpacity(0.5), 
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                // side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.5)) // İsteğe bağlı kenarlık
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -142,7 +139,7 @@ class NewRecordWarningPage extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50), // Tema'dan gelecek
+                minimumSize: const Size(double.infinity, 50), 
                 padding: const EdgeInsets.symmetric(vertical: 16)
               ),
               child: Text(isJoining ? "Şartları Anladım, Devam Et" : "Şartları Sağlıyorum, Devam Et"),

@@ -8,7 +8,7 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class VehicleDetailsPage extends StatefulWidget {
   final String vehicleId;
-  final Map<String, dynamic> vehicleData; // Başlangıç verisi
+  final Map<String, dynamic> vehicleData; 
 
   const VehicleDetailsPage({
     Key? key,
@@ -137,7 +137,7 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
           const SnackBar(content: Text('Fotoğraf silindi.')),
         );
         if (closeDialogAfterDelete && Navigator.canPop(context)) {
-          Navigator.pop(context); // Büyük fotoğraf dialogunu kapat
+          Navigator.pop(context);
         }
       }
     } catch (e) {
@@ -281,7 +281,7 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (BuildContext dialogContext) => Dialog( // dialogContext eklendi
+                          builder: (BuildContext dialogContext) => Dialog(
                             backgroundColor: Colors.transparent,
                             insetPadding: const EdgeInsets.all(10),
                             child: Column(
@@ -290,16 +290,16 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
                                 Expanded(
                                   child: InteractiveViewer(
                                     panEnabled: false,
-                                    boundaryMargin: const EdgeInsets.all(20), // Kenar boşluğu azaltıldı
+                                    boundaryMargin: const EdgeInsets.all(20), 
                                     minScale: 0.5,
                                     maxScale: 4,
-                                    child: ClipRRect( // Köşeleri yuvarlatmak için
+                                    child: ClipRRect( 
                                       borderRadius: BorderRadius.circular(12.0),
                                       child: Image.network(photoUrl, fit: BoxFit.contain),
                                     ),
                                   ),
                                 ),
-                                Padding( // Butonlar için padding
+                                Padding( 
                                   padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -372,12 +372,6 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
                               ),
                             ),
                           ),
-                          // Küçük resimdeki silme ipucu kaldırıldı, çünkü artık tıklayınca silme seçeneği var.
-                          // Positioned(
-                          //   top: 4,
-                          //   right: 4,
-                          //   child: Icon(Icons.delete_sweep_outlined, color: Colors.white.withOpacity(0.2), size: 16),
-                          // )
                         ],
                       ),
                     );

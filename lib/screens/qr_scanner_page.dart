@@ -1,11 +1,11 @@
 // lib/screens/qr_scanner_page.dart
-import 'dart:io'; // Platform kontrolü için
+import 'dart:io'; 
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'record_confirmation_page.dart'; // Yönlendirilecek sayfa
+import 'record_confirmation_page.dart'; 
 
 class QRScannerPage extends StatefulWidget {
-  final String joinerVehicleId; // Katılanın kendi seçtiği araç ID'si
+  final String joinerVehicleId; 
 
   const QRScannerPage({
     Key? key,
@@ -19,9 +19,9 @@ class QRScannerPage extends StatefulWidget {
 class _QRScannerPageState extends State<QRScannerPage> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? _controller;
-  Barcode? _result; // Okunan QR verisini anlık göstermek için (opsiyonel)
-  bool _isProcessing = false; // Aynı QR'ı birden fazla işleme sokmamak için
-  bool _flashOn = false; // Flaş durumunu takip etmek için
+  Barcode? _result; 
+  bool _isProcessing = false; 
+  bool _flashOn = false; 
 
   @override
   void reassemble() {
@@ -45,13 +45,12 @@ class _QRScannerPageState extends State<QRScannerPage> {
         return;
       }
 
-      // Bir QR kodu yakalandı, işleme alındı olarak işaretle
       setState(() {
         _isProcessing = true;
-        _result = scanData; // UI'da göstermek için (opsiyonel)
+        _result = scanData; 
       });
 
-      _controller!.pauseCamera(); // Yeni QR kodları almayı durdur
+      _controller!.pauseCamera(); 
 
       final String uniqueRecordId = scanData.code!;
       print("Okunan Benzersiz Record ID (QRScannerPage): $uniqueRecordId");
@@ -70,18 +69,17 @@ class _QRScannerPageState extends State<QRScannerPage> {
           context,
           MaterialPageRoute(
             builder: (_) => RecordConfirmationPage(
-              qrData: uniqueRecordId, // Okunan benzersiz ID'yi 'qrData' olarak iletiyoruz
+              qrData: uniqueRecordId, 
               joinerVehicleId: widget.joinerVehicleId,
             ),
           ),
         ).then((_) {
-          // RecordConfirmationPage'den geri dönüldüğünde veya sayfa kapatıldığında
           if (mounted) {
             print("Confirmation page kapatıldı, kamera devam ettiriliyor.");
-            _controller?.resumeCamera(); // Kamerayı tekrar aktif et
+            _controller?.resumeCamera(); 
             setState(() {
-              _isProcessing = false; // İşlem bitti olarak işaretle
-              _result = null; // Sonucu sıfırla
+              _isProcessing = false; 
+              _result = null;
             });
           }
         });
@@ -95,24 +93,22 @@ class _QRScannerPageState extends State<QRScannerPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Kamera izni verilmedi. QR kod okutmak için izin vermelisiniz.')),
       );
-      // İzin verilmediyse kullanıcıyı uygulama ayarlarına yönlendirmek için bir buton eklenebilir.
     }
   }
 
   @override
   void dispose() {
-    _controller?.dispose(); // Sayfa kapatıldığında controller'ı temizle
+    _controller?.dispose(); 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Ekran boyutuna göre tarama alanını ayarla
     var scanArea = (MediaQuery.of(context).size.width < 400 ||
             MediaQuery.of(context).size.height < 400)
-        ? 200.0 // Küçük ekranlar için
-        : 280.0; // Daha büyük ekranlar için (biraz büyütüldü)
+        ? 200.0 
+        : 280.0; 
 
     return Scaffold(
       appBar: AppBar(
@@ -145,26 +141,26 @@ class _QRScannerPageState extends State<QRScannerPage> {
       body: Column(
         children: <Widget>[
           Expanded(
-            flex: 5, // Kamera görüntüsüne daha fazla alan
+            flex: 5, 
             child: QRView(
               key: qrKey,
               onQRViewCreated: _onQRViewCreated,
               overlay: QrScannerOverlayShape(
-                borderColor: theme.colorScheme.primary, // Tema rengiyle uyumlu
-                borderRadius: 12, // Daha yuvarlak köşeler
-                borderLength: 30, // Kenar çizgilerinin uzunluğu
-                borderWidth: 8, // Daha belirgin kenarlık kalınlığı
-                cutOutSize: scanArea, // Kesilecek alanın boyutu
+                borderColor: theme.colorScheme.primary, 
+                borderRadius: 12, 
+                borderLength: 30, 
+                borderWidth: 8,
+                cutOutSize: scanArea, 
                 // cutOutBottomOffset: 50, // Tarama alanını dikeyde kaydırmak için (opsiyonel)
               ),
               onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
             ),
           ),
           Expanded(
-            flex: 1, // Alt bilgi alanına daha az alan
+            flex: 1, 
             child: Container(
-              width: double.infinity, // Genişliği tam kapla
-              color: theme.scaffoldBackgroundColor.withOpacity(0.95), // Arka plan rengi
+              width: double.infinity, 
+              color: theme.scaffoldBackgroundColor.withOpacity(0.95), 
               padding: const EdgeInsets.all(12.0),
               child: Center(
                 child: Column(

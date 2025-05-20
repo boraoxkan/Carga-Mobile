@@ -30,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _animationController.forward();
 
-    Timer(const Duration(seconds: 3), () { // Animasyon süresiyle uyumlu hale getirin
+    Timer(const Duration(seconds: 3), () { 
       if (FirebaseAuth.instance.currentUser != null) {
         Navigator.of(context).pushReplacementNamed('/home');
       } else {
@@ -49,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration( // Modern gradient arka plan
+        decoration: BoxDecoration( 
           gradient: LinearGradient(
             colors: [Colors.purple.shade300, Colors.purple.shade700],
             begin: Alignment.topLeft,
@@ -62,18 +62,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                // İSTEĞE BAĞLI: Lottie animasyonu
-                // SizedBox(
-                //   width: 150,
-                //   height: 150,
-                //   child: Lottie.asset('assets/animations/gavel_animation.json'), // Lottie dosyanızı ekleyin
-                // ),
-                // VEYA Mevcut İkon (daha büyük ve stilize)
                 Icon(
-                  Icons.gavel_rounded, // Yuvarlak hatlı bir ikon
+                  Icons.gavel_rounded,
                   size: 120,
                   color: Colors.white,
-                  shadows: [ // İkona derinlik katmak için gölge
+                  shadows: [ 
                     Shadow(
                       blurRadius: 10.0,
                       color: Colors.black.withOpacity(0.3),

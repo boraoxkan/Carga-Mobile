@@ -61,7 +61,6 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Future<void> _pickAndUploadImage() async {
-    // ... (Bu fonksiyon öncekiyle aynı kalabilir) ...
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (BuildContext context) {
@@ -117,7 +116,7 @@ class _AccountPageState extends State<AccountPage> {
     }
 
     try {
-      String fileName = 'profile_pictures/${user.uid}/profile_${DateTime.now().millisecondsSinceEpoch}.jpg'; // Daha benzersiz dosya adı
+      String fileName = 'profile_pictures/${user.uid}/profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
       firebase_storage.Reference storageRef =
           firebase_storage.FirebaseStorage.instance.ref().child(fileName);
 
@@ -133,7 +132,7 @@ class _AccountPageState extends State<AccountPage> {
       if (mounted) {
         setState(() {
           _profileImageUrl = downloadUrl;
-           _userData?['profileImageUrl'] = downloadUrl; // Yerel state'i de güncelle
+           _userData?['profileImageUrl'] = downloadUrl;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profil fotoğrafınız güncellendi!')),
@@ -158,7 +157,6 @@ class _AccountPageState extends State<AccountPage> {
   void _showEditDialog(Map<String, dynamic> currentUserData) {
     final _editFormKey = GlobalKey<FormState>();
     
-    // Controller'ları dialog içinde tanımlayıp ilk değerlerini atayalım
     final TextEditingController emailEditController = TextEditingController(text: currentUserData['email']?.toString() ?? '');
     final TextEditingController phoneEditController = TextEditingController(text: currentUserData['telefon']?.toString() ?? '');
     final TextEditingController driverLicenseNoController = TextEditingController(text: currentUserData['driverLicenseNo']?.toString() ?? '');
@@ -187,7 +185,7 @@ class _AccountPageState extends State<AccountPage> {
               title: const Text('Kişisel Bilgileri Düzenle'),
               content: Form(
                 key: _editFormKey,
-                child: SingleChildScrollView( // İçerik sığmazsa kaydırma için
+                child: SingleChildScrollView( 
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -220,7 +218,6 @@ class _AccountPageState extends State<AccountPage> {
                         keyboardType: TextInputType.multiline,
                         maxLines: 3,
                         minLines: 1,
-                         // validator: (value) => (value == null || value.trim().isEmpty) ? 'Adres boş bırakılamaz' : null, // Zorunluysa
                       ),
                       const SizedBox(height: 20),
                       Text("Sürücü Belgesi Bilgileri", style: Theme.of(context).textTheme.titleMedium),
@@ -265,11 +262,8 @@ class _AccountPageState extends State<AccountPage> {
                             'driverLicenseIssuePlace': driverLicenseIssuePlaceController.text.trim().isNotEmpty ? driverLicenseIssuePlaceController.text.trim() : null,
                             'lastProfileUpdate': FieldValue.serverTimestamp(),
                           };
-                          // Sadece e-posta değişiyorsa Firebase Auth'u güncelle (re-authentication gerekebilir)
                           if (user.email != emailEditController.text.trim()) {
                             // await user.updateEmail(emailEditController.text.trim()); // Bu işlem hassas olduğu için re-authentication ister.
-                            // Şimdilik sadece Firestore'u güncelleyelim. E-posta değişikliği daha karmaşık bir akış gerektirir.
-                            // E-posta değişikliğini ayrı bir özellik olarak ele almak daha iyi olabilir.
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('E-posta değişikliği için ayrı bir doğrulama adımı gerekebilir. Şimdilik sadece profil bilgileri güncellendi.')),
                             );
@@ -277,8 +271,8 @@ class _AccountPageState extends State<AccountPage> {
 
                           await FirebaseFirestore.instance.collection('users').doc(user.uid).update(updatedData);
                           
-                          Navigator.pop(dialogContext); // Önce dialogu kapat
-                          if (mounted) { // Sonra mounted kontrolü yap
+                          Navigator.pop(dialogContext);
+                          if (mounted) {
                              ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Bilgileriniz güncellendi.')),
                             );
@@ -287,7 +281,7 @@ class _AccountPageState extends State<AccountPage> {
                           }
                         }
                       } catch (e) {
-                         if (mounted) { // Hata durumunda da mounted kontrolü
+                         if (mounted) { 
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('Güncelleme hatası: $e')),
                             );

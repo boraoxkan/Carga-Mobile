@@ -108,8 +108,6 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
 
   // Araç üzerindeki hasar noktalarının konumlarını yüzdesel olarak tanımlar
   Offset _getRelativeOffsetForRegion(CrashRegion region) {
-    // Bu yüzdeler (0.0 - 1.0 arası), aracın görseline göre ayarlanmalıdır.
-    // (0,0) sol üst, (1,1) sağ alt köşedir.
     switch (region) {
       case CrashRegion.frontLeft:   return const Offset(0.25, 0.15); // Sol ön
       case CrashRegion.frontCenter: return const Offset(0.50, 0.10); // Ön orta
@@ -123,7 +121,6 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
   }
 
   String _regionLabel(CrashRegion region) {
-    // ... (Bu metot aynı kalacak) ...
     switch (region) {
       case CrashRegion.frontLeft:   return 'Ön Sol';
       case CrashRegion.frontCenter: return 'Ön Orta';
@@ -140,7 +137,7 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const double selectionButtonRadius = 22.0; // Seçim butonlarının yarıçapı
+    const double selectionButtonRadius = 22.0; 
 
     return Scaffold(
       appBar: AppBar(
@@ -167,14 +164,10 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                       // Hasar seçim alanı için LayoutBuilder kullanarak esnek boyutlandırma
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          // Aracın gösterileceği alanın enini ve boyunu belirle
-                          // Genellikle kare veya araca benzer bir oran tercih edilir.
-                          // Ekran genişliğinin %70'i kadar bir alan ayıralım.
                           final double carAreaSize = constraints.maxWidth * 0.75 < constraints.maxHeight * 0.75
                               ? constraints.maxWidth * 0.75
                               : constraints.maxHeight * 0.75;
                           
-                          // Araba ikonunun boyutu, ayrılan alandan biraz daha küçük olabilir
                           final double carIconSize = carAreaSize * 0.7;
 
 
@@ -194,10 +187,9 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                                   ),
                                   // Tıklanabilir hasar bölgeleri
                                   for (var region in CrashRegion.values)
-                                    Builder( // Her bir Positioned için ayrı context (gerekirse)
+                                    Builder( 
                                       builder: (context) {
                                         Offset relativeOffset = _getRelativeOffsetForRegion(region);
-                                        // Konumu, container'ın sol üst köşesine göre hesapla
                                         // Butonun merkezi, hesaplanan göreceli konumda olacak
                                         double left = (relativeOffset.dx * carAreaSize) - selectionButtonRadius;
                                         double top = (relativeOffset.dy * carAreaSize) - selectionButtonRadius;
@@ -235,12 +227,12 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                                                 ]
                                               ),
                                               child: _selectedRegions.contains(region)
-                                                  ? Icon(Icons.priority_high_rounded, // Veya Icons.clear
+                                                  ? Icon(Icons.priority_high_rounded, 
                                                       color: theme.colorScheme.onError,
                                                       size: selectionButtonRadius * 1.2)
                                                   : Center(
                                                       child: Text(
-                                                        _regionLabel(region)[0], // Bölgenin baş harfi
+                                                        _regionLabel(region)[0], 
                                                         style: TextStyle(
                                                           color: theme.colorScheme.onSecondaryContainer.withOpacity(0.7),
                                                           fontWeight: FontWeight.bold,
@@ -281,7 +273,7 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                                     _toggleRegion(r);
                                   },
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), // Daha yuvarlak chip
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), 
                                 );
                               }).toList(),
                             ),
@@ -289,7 +281,7 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                         ),
                       ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 20.0), // Alt boşluk artırıldı
+                      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 20.0), 
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.location_on_rounded, size: 20),
                         label: const Text('Konum Seçimi ve Devam'),
@@ -299,7 +291,7 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                         onPressed: _selectedRegions.isEmpty || _currentVehicleInfo == null
                             ? null
                             : () async {
-                               // ... (LocationConfirmPage ve ReportSummaryPage'e yönlendirme kodu aynı) ...
+                               // ... (LocationConfirmPage ve ReportSummaryPage'e yönlendirme kodu) 
                                 final LatLng initialPos = const LatLng(41.0082, 28.9784);
                                 if (!mounted) return;
                                 final LatLng? confirmedPos = await Navigator.push<LatLng>(

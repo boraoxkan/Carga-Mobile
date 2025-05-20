@@ -2,15 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'location_selection_page.dart'; // Yönlendirilecek sayfa
+import 'location_selection_page.dart'; 
 
 class RecordConfirmationPage extends StatefulWidget {
-  final String qrData; // Bu artık benzersiz recordId (uniqueRecordId)
-  final String joinerVehicleId; // Katılanın kendi seçtiği araç ID'si
+  final String qrData; 
+  final String joinerVehicleId; 
 
   const RecordConfirmationPage({
     Key? key,
-    required this.qrData, // qrData olarak kalsa da, içeriği uniqueRecordId olacak
+    required this.qrData, 
     required this.joinerVehicleId,
   }) : super(key: key);
 
@@ -21,7 +21,7 @@ class RecordConfirmationPage extends StatefulWidget {
 class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
   Future<Map<String, dynamic>>? _infoFuture;
   String? _errorMessage;
-  bool _isConfirming = false; // Onaylama işlemi sırasında yükleme göstergesi için
+  bool _isConfirming = false; 
 
   @override
   void initState() {
@@ -93,7 +93,6 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
     }
     final joinerUserData = joinerUserSnap.data()!;
 
-    // 5. Katılanın seçtiği araç verisini Firestore'dan çek
     final joinerVehicleSnap = await firestore
         .collection('users')
         .doc(joinerUid)
@@ -110,7 +109,7 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
       'creatorVehicleData': creatorVehicleData,
       'joinerData': joinerUserData,
       'joinerVehicleData': joinerVehicleData,
-      'uniqueRecordId': uniqueRecordId, // Onaylama adımında kullanmak üzere ID'yi de döndür
+      'uniqueRecordId': uniqueRecordId, 
     };
   }
 
@@ -134,18 +133,16 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
     }
 
     try {
-      // Firestore kaydını BENZERSİZ ID ile ve doğru alanlarla güncelle
       await FirebaseFirestore.instance
           .collection('records')
-          .doc(uniqueRecordId) // widget.qrData yerine _fetchAllInfo'dan gelen uniqueRecordId
+          .doc(uniqueRecordId) 
           .update({
         'joinerUid': currentUser.uid,
-        'joinerVehicleId': widget.joinerVehicleId, // Katılanın seçtiği araç
+        'joinerVehicleId': widget.joinerVehicleId, 
         'confirmedByJoiner': true,
-        'status': 'joiner_confirmed', // Yeni durum
+        'status': 'joiner_confirmed',
         'joinerConfirmationTimestamp': FieldValue.serverTimestamp(),
-        // joinerVehicleInfo da buraya eklenebilir eğer istenirse
-        // 'joinerVehicleInfo': (await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).collection('vehicles').doc(widget.joinerVehicleId).get()).data(),
+        
       });
 
       if (!mounted) return;
@@ -153,13 +150,13 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
         const SnackBar(content: Text('Bilgiler onaylandı. Kaza yeri seçimine yönlendiriliyorsunuz.')),
       );
 
-      Navigator.pushReplacement( // Geri dönüldüğünde bu sayfaya tekrar gelinmemesi için
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (_) => LocationSelectionPage(
-            recordId: uniqueRecordId, // Benzersiz tutanak ID'sini geçir
-            isCreator: false, // Bu sayfayı gören QR okutan (katılan) kullanıcıdır
-            currentUserVehicleId: widget.joinerVehicleId, // Katılanın araç ID'si
+            recordId: uniqueRecordId, 
+            isCreator: false, 
+            currentUserVehicleId: widget.joinerVehicleId, 
           ),
         ),
       );
@@ -172,7 +169,6 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
         setState(() => _isConfirming = false);
       }
     }
-    // Yönlendirme sonrası setState çağırmaya gerek yok.
   }
 
 
@@ -189,7 +185,6 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
           }
           if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
             _errorMessage = snapshot.hasError ? snapshot.error.toString() : 'Bilgiler yüklenemedi.';
-            // Gelen hatayı kullanıcıya daha anlaşılır göstermek için
             String displayError = _errorMessage!;
             if (displayError.contains("Exception: ")) {
               displayError = displayError.substring(displayError.indexOf("Exception: ") + 11);
@@ -211,7 +206,7 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      displayError, // Kullanıcı dostu hata mesajı
+                      displayError,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
                     ),
@@ -219,11 +214,11 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
                     ElevatedButton.icon(
                       icon: const Icon(Icons.refresh_rounded),
                       label: const Text('Tekrar Dene'),
-                      onPressed: _loadData, // _infoFuture'ı yeniden tetikler
+                      onPressed: _loadData, 
                     ),
                      const SizedBox(height: 12),
                     TextButton(
-                      onPressed: () => Navigator.pop(context), // QR Tarama sayfasına geri dön
+                      onPressed: () => Navigator.pop(context),
                       child: const Text('Vazgeç ve Geri Dön'),
                     ),
                   ],
@@ -237,7 +232,7 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
           final cv = info['creatorVehicleData'] as Map<String, dynamic>;
           final joiner = info['joinerData'] as Map<String, dynamic>;
           final jv = info['joinerVehicleData'] as Map<String, dynamic>;
-          final uniqueRecordId = info['uniqueRecordId'] as String; // _fetchAllInfo'dan gelen ID
+          final uniqueRecordId = info['uniqueRecordId'] as String; 
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
@@ -247,7 +242,7 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
                 _buildInfoCard(
                   context: context,
                   title: 'Diğer Sürücü (QR Sahibi)',
-                  icon: Icons.qr_code_2_rounded, // Daha uygun bir ikon
+                  icon: Icons.qr_code_2_rounded,
                   children: [
                     Text('Ad Soyad: ${_getString(creator, 'isim')} ${_getString(creator, 'soyisim')}'),
                     Text('Telefon: ${_getString(creator, 'telefon', 'Telefon Yok')}'),
@@ -277,8 +272,7 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
                   label: Text(_isConfirming ? 'ONAYLANIYOR...' : 'Bilgileri Onayla ve Devam Et'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    // backgroundColor: theme.colorScheme.primary, // Temadan zaten geliyor
-                    // foregroundColor: theme.colorScheme.onPrimary, // Temadan zaten geliyor
+
                   ),
                   onPressed: _isConfirming ? null : () => _confirmAndProceed(uniqueRecordId),
                 ),
@@ -287,7 +281,7 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
                   onPressed: _isConfirming ? null : () => Navigator.pop(context),
                    style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: BorderSide(color: theme.colorScheme.outline), // Daha yumuşak bir kenarlık
+                    side: BorderSide(color: theme.colorScheme.outline), 
                   ),
                   child: const Text('Vazgeç'),
                 ),
@@ -299,7 +293,7 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
     );
   }
 
-  // Bilgi kartları için yardımcı widget (daha modern bir görünüm için)
+  // Bilgi kartları için yardımcı widget 
   Widget _buildInfoCard({
     required BuildContext context,
     required String title,
@@ -308,8 +302,8 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
   }) {
     final theme = Theme.of(context);
     return Card(
-      elevation: 2, // Temadan da gelebilir, burada özelleştirilebilir
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), // Daha yuvarlak köşeler
+      elevation: 2, 
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), 
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -319,7 +313,7 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
               children: [
                 Icon(icon, color: theme.colorScheme.primary, size: 28),
                 const SizedBox(width: 12),
-                Expanded( // Uzun başlıkların taşmasını engellemek için
+                Expanded(
                   child: Text(
                     title,
                     style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -327,7 +321,7 @@ class _RecordConfirmationPageState extends State<RecordConfirmationPage> {
                 ),
               ],
             ),
-            const Divider(height: 24, thickness: 0.5), // Boşluk ve kalınlık ayarlandı
+            const Divider(height: 24, thickness: 0.5), 
             ...children,
           ],
         ),

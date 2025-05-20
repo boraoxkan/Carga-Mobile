@@ -29,7 +29,7 @@ class _ReportsPageState extends State<ReportsPage> {
     }
     final locale = Localizations.localeOf(context).toString();
     try {
-      return DateFormat('dd MMMM yyyy, HH:mm', locale).format(timestamp.toDate()); // yyyy eklendi
+      return DateFormat('dd MMMM yyyy, HH:mm', locale).format(timestamp.toDate());
     } catch (e) {
       return DateFormat('dd.MM.yyyy HH:mm').format(timestamp.toDate());
     }

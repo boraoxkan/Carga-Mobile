@@ -6,7 +6,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'waiting_for_confirmation_page.dart';
 
 class QRDisplayPage extends StatefulWidget {
-  final String recordId; // Bu, Firestore'daki benzersiz belge ID'si
+  final String recordId; 
 
   const QRDisplayPage({Key? key, required this.recordId}) : super(key: key);
 
@@ -42,7 +42,7 @@ class _QRDisplayPageState extends State<QRDisplayPage> {
         context,
         MaterialPageRoute(
           builder: (_) =>
-              WaitingForConfirmationPage(recordId: widget.recordId), // Benzersiz ID'yi geçir
+              WaitingForConfirmationPage(recordId: widget.recordId), 
         ),
       );
     }
@@ -54,14 +54,9 @@ class _QRDisplayPageState extends State<QRDisplayPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // widget.recordId artık doğrudan benzersiz bir Firestore belge ID'si olduğu için,
-    // karmaşık format kontrollerine (örneğin '|' içeriyor mu) gerek yok.
-    // Sadece boş olup olmadığını kontrol etmek yeterli olabilir.
     final bool isValidQrData = widget.recordId.isNotEmpty;
 
     if (!isValidQrData) {
-      // Bu durum normal şartlarda oluşmamalı, çünkü recordId bir önceki sayfada üretiliyor.
-      // Ancak bir güvenlik önlemi olarak bu kontrol kalabilir.
       return Scaffold(
         appBar: AppBar(title: const Text("Hata")),
         body: Center(
@@ -81,7 +76,7 @@ class _QRDisplayPageState extends State<QRDisplayPage> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () => Navigator.pop(context), // Bir önceki sayfaya dön
+                  onPressed: () => Navigator.pop(context),
                   child: const Text("Geri Dön"),
                 )
               ],
@@ -124,7 +119,7 @@ class _QRDisplayPageState extends State<QRDisplayPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: QrImageView(
-                    data: widget.recordId, // QR koduna yazılacak veri artık benzersiz Firestore ID'si
+                    data: widget.recordId, 
                     version: QrVersions.auto,
                     size: 230.0,
                     gapless: false,
@@ -171,11 +166,11 @@ class _QRDisplayPageState extends State<QRDisplayPage> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    onPressed: _navigateToWaitingPage, // Firestore'a yazma işlemi kaldırıldı, sadece yönlendirme
+                    onPressed: _navigateToWaitingPage, 
                   ),
             const SizedBox(height: 12),
             TextButton(
-                onPressed: _isLoading ? null : () => Navigator.pop(context), // Kullanıcı isterse bir önceki sayfaya (DriverAndVehicleInfoPage) dönebilir
+                onPressed: _isLoading ? null : () => Navigator.pop(context), 
                 child: const Text("Önceki Adıma Dön")
             )
           ],

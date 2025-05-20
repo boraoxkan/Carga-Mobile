@@ -231,7 +231,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _buildSectionTitle(context, sectionTitle, sectionIcon, theme.colorScheme.secondary),
-        if (userProfileData != null) // Eğer userProfileData recordData içinde varsa doğrudan kullan
+        if (userProfileData != null) 
              _buildInfoCard( context: context, title: "Sürücü Bilgileri", titleIcon: Icons.person_outline_rounded,
                 children: [
                   _buildTextInfoRow(context, "Ad Soyad", '${userProfileData['isim'] ?? ''} ${userProfileData['soyisim'] ?? ''}'.trim(), isBoldValue: true),
@@ -314,7 +314,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     if (value is Timestamp) return value.toDate().toIso8601String();
     if (value is LatLng) return {'latitude': value.latitude, 'longitude': value.longitude};
     if (value is CrashRegion) return value.name; // Enum'ı string'e çevir
-    if (value is Set) return value.map((e) => _convertValueForJsonRecursive(e)).toList(); // Set'i List'e çevir
+    if (value is Set) return value.map((e) => _convertValueForJsonRecursive(e)).toList(); 
     if (value is List) return value.map((item) => _convertValueForJsonRecursive(item)).toList();
     if (value is Map) return value.map((key, val) => MapEntry(key.toString(), _convertValueForJsonRecursive(val)));
     return value;

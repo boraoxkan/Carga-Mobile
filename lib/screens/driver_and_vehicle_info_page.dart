@@ -2,8 +2,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-// Diğer sayfaların importları
 import 'qr_display_page.dart';
 import 'qr_scanner_page.dart';
 // import 'package:tutanak/screens/vehicles_page.dart'; // Eğer Araçlarım sayfasından hızlıca araç eklemeye yönlendirme yapılacaksa
@@ -20,14 +18,13 @@ class DriverAndVehicleInfoPage extends StatefulWidget {
 }
 
 class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
-  // _formKey burada tanımlı ama kullanılmıyor gibi, eğer bir Form widget'ı eklenirse aktifleşir.
   // final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
 
   String? selectedVehicleId;
   List<Map<String, dynamic>> vehiclesList = [];
-  bool _isLoading = true; // Hem genel yükleme hem de buton aksiyonu için kullanılabilir
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -118,17 +115,16 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
 
       vehiclesList = snap.docs.map((d) {
         final data = d.data();
-        data['id'] = d.id; // Firestore doküman ID'sini ekle
+        data['id'] = d.id;
         return data;
       }).toList();
 
       if (vehiclesList.isNotEmpty) {
-        // Eğer önceden bir araç seçili değilse veya seçili araç artık listede yoksa ilk aracı seç
         if (selectedVehicleId == null || !vehiclesList.any((v) => v['id'] == selectedVehicleId)) {
           selectedVehicleId = vehiclesList.first['id'] as String?;
         }
       } else {
-        selectedVehicleId = null; // Araç yoksa seçili ID'yi null yap
+        selectedVehicleId = null;
       }
     } catch (e, s) {
       print("HATA: Firestore'dan araç bilgisi alınırken (DriverAndVehicleInfoPage): $e");
@@ -300,15 +296,13 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // _isLoading durumu hem ilk yükleme için hem de "Devam Et" butonuna basıldığındaki işlem için kullanılabilir.
-    // Butona özel bir _isProcessing gibi bir state de tanımlanabilir.
-    bool isActionInProgress = _isLoading && !vehiclesList.isNotEmpty; // Sadece ilk yükleme için genel _isLoading'i kullan, buton için ayrı yönetilebilir.
+    bool isActionInProgress = _isLoading && !vehiclesList.isNotEmpty; 
 
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isJoining ? "Tutanağa Dahil Ol: Bilgiler" : "Yeni Tutanak: Bilgiler"),
       ),
-      body: isActionInProgress // İlk veri yükleniyorsa
+      body: isActionInProgress 
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _loadInitialData,
@@ -421,13 +415,12 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
                                     'creatorVehicleId': selectedVehicleId,
                                     'status': 'pending_scan',
                                     'confirmedByCreator': true,
-                                    'confirmedByJoiner': false, // Başlangıçta false
+                                    'confirmedByJoiner': false, 
                                     'createdAt': FieldValue.serverTimestamp(),
-                                    'isDeletedByCreator': false, // YENİ EKLENDİ
-                                    'isDeletedByJoiner': false,  // YENİ EKLENDİ
-                                    'joinerUid': null, // Başlangıçta null
-                                    'joinerVehicleId': null, // Başlangıçta null
-                                    // Diğer tüm potansiyel alanlar başlangıçta null veya varsayılan değer olabilir
+                                    'isDeletedByCreator': false, 
+                                    'isDeletedByJoiner': false,  
+                                    'joinerUid': null, 
+                                    'joinerVehicleId': null, 
                                     'latitude': null,
                                     'longitude': null,
                                     'formattedAddress': null,
@@ -443,7 +436,6 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
                                     'joinerConfirmationTimestamp': null,
                                     'joinerLastUpdateTimestamp': null,
                                     'reportFinalizedTimestamp': null,
-                                    // Gerekirse eklemek istediğiniz diğer başlangıç alanları
                                   });
 
                                   if (!mounted) return;
@@ -462,7 +454,7 @@ class _DriverAndVehicleInfoPageState extends State<DriverAndVehicleInfoPage> {
                                   }
                                 } finally {
                                   if (mounted) {
-                                    setState(() => _isLoading = false); // Buton işlemi için yükleme durumu
+                                    setState(() => _isLoading = false); 
                                   }
                                 }
                               }

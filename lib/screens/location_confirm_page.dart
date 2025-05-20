@@ -4,12 +4,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LocationConfirmPage extends StatefulWidget {
-  final String recordId; // Bu parametre kullanılmıyor gibi, ama constructor'da kalmış
+  final String recordId;
   final LatLng initialPosition;
 
   const LocationConfirmPage({
     Key? key,
-    required this.recordId, // Kullanılmıyorsa kaldırılabilir
+    required this.recordId, 
     required this.initialPosition,
   }) : super(key: key);
 
@@ -21,7 +21,7 @@ class _LocationConfirmPageState extends State<LocationConfirmPage> {
   GoogleMapController? _mapController;
   late LatLng _markerPosition;
   bool _loadingRealPosition = true;
-  bool _permissionDenied = false; // İzin reddedilme durumunu takip etmek için
+  bool _permissionDenied = false; 
 
   @override
   void initState() {
@@ -71,14 +71,14 @@ class _LocationConfirmPageState extends State<LocationConfirmPage> {
     try {
       Position pos = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
-          timeLimit: const Duration(seconds: 10)); // Timeout süresi artırıldı
+          timeLimit: const Duration(seconds: 10)); 
       if (mounted) {
         setState(() {
           _markerPosition = LatLng(pos.latitude, pos.longitude);
           _loadingRealPosition = false;
         });
         _mapController?.animateCamera(
-          CameraUpdate.newLatLngZoom(_markerPosition, 16.5), // Daha yakın bir zoom seviyesi
+          CameraUpdate.newLatLngZoom(_markerPosition, 16.5), 
         );
       }
     } catch (e) {
@@ -94,7 +94,6 @@ class _LocationConfirmPageState extends State<LocationConfirmPage> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    // Eğer gerçek konum zaten alındıysa veya izin reddedildiyse, haritayı mevcut marker pozisyonuna animasyonla getir
     if (!_loadingRealPosition) {
       _mapController?.animateCamera(
         CameraUpdate.newLatLngZoom(_markerPosition, _permissionDenied ? 14.0 : 16.5),
@@ -115,9 +114,9 @@ class _LocationConfirmPageState extends State<LocationConfirmPage> {
         children: [
           GoogleMap(
             onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(target: _markerPosition, zoom: 14), // Başlangıç zoom'u
-            myLocationEnabled: !_permissionDenied, // İzin varsa kendi konumunu göster
-            myLocationButtonEnabled: !_permissionDenied, // İzin varsa butonu göster
+            initialCameraPosition: CameraPosition(target: _markerPosition, zoom: 14), 
+            myLocationEnabled: !_permissionDenied, 
+            myLocationButtonEnabled: !_permissionDenied, 
             markers: {
               Marker(
                 markerId: const MarkerId('selectedAccidentLocation'),
@@ -128,7 +127,7 @@ class _LocationConfirmPageState extends State<LocationConfirmPage> {
                     setState(() => _markerPosition = newPosition);
                   }
                 },
-                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed), // Kırmızı marker
+                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed), 
                 infoWindow: const InfoWindow(title: "Kaza Yeri", snippet: "Konumu sürükleyerek ayarlayabilirsiniz."),
               )
             },
@@ -138,16 +137,16 @@ class _LocationConfirmPageState extends State<LocationConfirmPage> {
                  _mapController?.animateCamera(CameraUpdate.newLatLng(newPosition));
               }
             },
-            zoomControlsEnabled: true, // Harita üzerinde +/- butonları
-            mapToolbarEnabled: false, // Google Haritalar uygulamasını açma butonunu gizle
+            zoomControlsEnabled: true, 
+            mapToolbarEnabled: false, 
             // mapType: MapType.hybrid, // İsteğe bağlı: Uydu görünümü için
           ),
           // Yükleme göstergesi ekranın ortasında ve haritanın üzerinde
           if (_loadingRealPosition)
             Container(
-              color: Colors.black.withOpacity(0.3), // Hafif karartma
+              color: Colors.black.withOpacity(0.3), 
               child: Center(
-                child: Card( // Daha şık bir yükleme göstergesi
+                child: Card( 
                   elevation: 4,
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
@@ -163,15 +162,15 @@ class _LocationConfirmPageState extends State<LocationConfirmPage> {
                 ),
               ),
             ),
-          // "Bu Konumu Onayla" butonu ekranın altında
+          // "Bu Konumu Onayla" butonu 
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: Container( // Butonun etrafına gölge ve padding için
+            child: Container( 
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24), // Alt boşluk artırıldı
               decoration: BoxDecoration(
-                gradient: LinearGradient( // Hafif bir gradient
+                gradient: LinearGradient( 
                   colors: [
                     theme.scaffoldBackgroundColor.withOpacity(0.0),
                     theme.scaffoldBackgroundColor.withOpacity(0.8),

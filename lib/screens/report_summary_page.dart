@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // FilteringTextInputFormatter ve LengthLimitingTextInputFormatter için
+import 'package:flutter/services.dart'; 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
@@ -13,7 +13,7 @@ import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:intl/intl.dart'; // Tarih ve saat formatlama için
+import 'package:intl/intl.dart'; 
 import 'package:tutanak/models/crash_region.dart';
 
 // PDF Alanı 7 için Kaza Durumları Listesi (Bu listeyi kendi PDF'inize göre güncelleyin)
@@ -33,7 +33,6 @@ const List<String> kazaDurumlariListesi = [
   "Park etmiş araca çarpmak",
   "Karşı yönden gelen trafiğin kullandığı yola girmek",
   "Taşıt giremez işareti bulunan yola girmek",
-  // Diğer maddeleri buraya ekleyebilirsiniz...
 ];
 
 class ReportSummaryPage extends StatefulWidget {
@@ -68,7 +67,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
   Map<String, dynamic>? _otherPartyUserData;
   Map<String, dynamic>? _otherPartyVehicleData;
   Set<CrashRegion> _otherPartySelectedRegions = {};
-  List<String> _otherPartySecilenKazaDurumlari = []; // Karşı tarafın kaza durumları
+  List<String> _otherPartySecilenKazaDurumlari = [];
   String? _otherPartyProcessedImageBase64FromUbuntu;
   List<dynamic>? _otherPartyDetectionResultsFromUbuntu;
   String? _otherPartyNotes;
@@ -93,13 +92,13 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
 
   final List<String> _secilenKazaDurumlari = [];
 
-  final String _ubuntuServerUrl = "http://100.110.23.124:5001/process_damage_image"; // Kendi sunucu adresinizi girin
+  final String _ubuntuServerUrl = "http://100.110.23.124:5001/process_damage_image"; 
 
   @override
   void initState() {
     super.initState();
-    _loadInitialRecordData(); // Önce kayıttan verileri yükle
-    _fetchOtherPartyData(); // Sonra karşı taraf verilerini çek
+    _loadInitialRecordData();
+    _fetchOtherPartyData();
   }
 
   Future<void> _loadInitialRecordData() async {
@@ -122,7 +121,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
           _mahalleController.text = data['kazaMahalle'] ?? '';
           _caddeController.text = data['kazaCadde'] ?? '';
           _sokakController.text = data['kazaSokak'] ?? '';
-          _address = data['formattedAddress'] ?? _address; // Eğer varsa genel adresi de al
+          _address = data['formattedAddress'] ?? _address; 
 
           // Tanık Bilgileri (Sadece creator ise yükle)
           if (widget.isCreator && data['taniklar'] != null && data['taniklar'] is List && (data['taniklar'] as List).isNotEmpty) {
@@ -163,15 +162,13 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
   
   Future<void> _getAddressFromLatLngThenPopulate() async {
     if (!mounted) return;
-    // Eğer Firestore'dan ilçe, mahalle vb. zaten yüklendiyse ve doluysa, tekrar API'ye gitme.
-    // Ancak, kullanıcı manuel olarak değiştirmek isteyebilir veya _address alanı boşsa yine de çek.
     bool shouldFetch = _ilceController.text.isEmpty || _mahalleController.text.isEmpty || _caddeController.text.isEmpty || _address == null;
 
-    if (!shouldFetch && _isFetchingAddress) { // Eğer çekmeye gerek yoksa ve fetching true ise false yap
+    if (!shouldFetch && _isFetchingAddress) { 
         if(mounted) setState(() => _isFetchingAddress = false);
         return;
     }
-    if (!shouldFetch && !_isFetchingAddress) { // Zaten çekilmiş ve gerek yoksa hiç bir şey yapma
+    if (!shouldFetch && !_isFetchingAddress) {
         return;
     }
 
@@ -378,11 +375,10 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
           'telefonu': _tanik1TelController.text.trim(),
         });
       }
-      // Diğer tanıklar için de benzer bir yapı eklenebilir.
       if (tanikListesi.isNotEmpty) {
-        dataToUpdate['taniklar'] = tanikListesi; // arrayUnion yerine direkt listeyi set et
+        dataToUpdate['taniklar'] = tanikListesi;
       } else {
-        dataToUpdate['taniklar'] = FieldValue.delete(); // Tanık yoksa alanı sil
+        dataToUpdate['taniklar'] = FieldValue.delete(); 
       }
     }
 
@@ -708,7 +704,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
   }
 
   Widget _buildDateTimePickerRow(ThemeData theme) {
-    final DateFormat dateFormat = DateFormat('dd MMMM yyyy, EEEE', 'tr'); // Türkçe format
+    final DateFormat dateFormat = DateFormat('dd MMMM yyyy, EEEE', 'tr'); 
     final TimeOfDayFormat timeFormat = MediaQuery.of(context).alwaysUse24HourFormat ? TimeOfDayFormat.HH_colon_mm : TimeOfDayFormat.h_colon_mm_space_a;
 
     return Row(
@@ -799,16 +795,15 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
         Text("Lütfen aşağıdaki maddelerden size uyanları işaretleyiniz.", style: theme.textTheme.bodySmall),
         const SizedBox(height: 8),
         Container(
-          constraints: BoxConstraints(maxHeight: 250), // Kaydırılabilir alan için yükseklik sınırı
+          constraints: BoxConstraints(maxHeight: 250), 
           decoration: BoxDecoration(
             border: Border.all(color: theme.dividerColor),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Scrollbar( // Kaydırma çubuğu ekle
+          child: Scrollbar(
             thumbVisibility: true,
             child: ListView.builder(
               shrinkWrap: true,
-              // physics: const NeverScrollableScrollPhysics(), // Scrollbar ile bu gereksiz olabilir
               itemCount: kazaDurumlariListesi.length,
               itemBuilder: (context, index) {
                 final durum = kazaDurumlariListesi[index];
@@ -988,7 +983,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
                             titleIcon: Icons.image_search_rounded,
                             children: [_buildOtherPartyPhotoDisplay(theme)],
                           )
-                        else if (!_isLoadingOtherPartyData) // Yükleme bittiyse ve fotoğraf yoksa göster
+                        else if (!_isLoadingOtherPartyData) 
                           _buildInfoCard(
                             title: 'Diğer Sürücünün Hasar Fotoğrafı',
                              titleIcon: Icons.image_not_supported_outlined,

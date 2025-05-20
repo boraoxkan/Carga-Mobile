@@ -1,10 +1,10 @@
 // lib/screens/waiting_for_confirmation_page.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'location_selection_page.dart'; // Yönlendirilecek sayfa
+import 'location_selection_page.dart'; 
 
 class WaitingForConfirmationPage extends StatefulWidget {
-  final String recordId; // Bu, Firestore'daki benzersiz belge ID'si
+  final String recordId; 
 
   const WaitingForConfirmationPage({Key? key, required this.recordId}) : super(key: key);
 
@@ -13,17 +13,15 @@ class WaitingForConfirmationPage extends StatefulWidget {
 }
 
 class _WaitingForConfirmationPageState extends State<WaitingForConfirmationPage> {
-  // Bu sayfada ek bir state'e (şimdilik) ihtiyaç yok gibi duruyor.
-  // StreamBuilder veriyi yönetecek.
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return PopScope(
-      canPop: false, // Geri tuşuyla çıkışı engelle
+      canPop: false, 
       onPopInvoked: (bool didPop) async {
-        if (didPop) return; // Zaten pop olduysa bir şey yapma
+        if (didPop) return; 
 
         final bool shouldPop = await showDialog<bool>(
           context: context,
@@ -33,16 +31,16 @@ class _WaitingForConfirmationPageState extends State<WaitingForConfirmationPage>
                 'Diğer sürücünün onayı bekleniyor. Bu ekrandan çıkarsanız, tutanak işlemi yarım kalabilir ve diğer sürücü tutanağa katılamayabilir.\n\nYine de çıkmak istiyor musunuz?'),
             actions: <Widget>[
               TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(false), // Hayır, bekle
+                onPressed: () => Navigator.of(dialogContext).pop(false), 
                 child: const Text('Beklemeye Devam Et'),
               ),
               TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(true), // Evet, çık
+                onPressed: () => Navigator.of(dialogContext).pop(true), 
                 child: Text('Evet, Çık', style: TextStyle(color: theme.colorScheme.error)),
               ),
             ],
           ),
-        ) ?? false; // Kullanıcı bir seçim yapmazsa false döner
+        ) ?? false;
 
         if (shouldPop && mounted) {
           // Opsiyonel: Kullanıcı çıkarsa Firestore'daki kaydın durumunu 'cancelled_by_creator_while_waiting' gibi bir değere güncelleyebilirsiniz.
@@ -59,12 +57,12 @@ class _WaitingForConfirmationPageState extends State<WaitingForConfirmationPage>
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Diğer Sürücünün Onayı Bekleniyor'),
-          automaticallyImplyLeading: false, // Geri tuşunu AppBar'da gösterme
+          automaticallyImplyLeading: false, 
         ),
         body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
               .collection('records')
-              .doc(widget.recordId) // Dinlenecek belge benzersiz ID ile belirtiliyor
+              .doc(widget.recordId) 
               .snapshots(),
           builder: (context, AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
@@ -140,12 +138,12 @@ class _WaitingForConfirmationPageState extends State<WaitingForConfirmationPage>
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Hata: Oluşturanın araç ID bilgisi alınamadı.')),
                       );
-                      Navigator.popUntil(context, (route) => route.isFirst); // Ana sayfaya dön
+                      Navigator.popUntil(context, (route) => route.isFirst); 
                     }
                     return;
                   }
                   
-                  if (mounted) { // SnackBar ve yönlendirme öncesi son bir kontrol
+                  if (mounted) { 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Row(
@@ -162,13 +160,13 @@ class _WaitingForConfirmationPageState extends State<WaitingForConfirmationPage>
                     // Gecikmeli yönlendirme (UI'ın güncellenmesi için)
                     Future.delayed(const Duration(milliseconds: 500), () {
                        if (mounted && (ModalRoute.of(context)?.isCurrent ?? false)) {
-                          Navigator.pushReplacement( // Geri tuşuyla bu sayfaya gelinmemesi için
+                          Navigator.pushReplacement( 
                             context,
                             MaterialPageRoute(
                               builder: (_) => LocationSelectionPage(
-                                recordId: widget.recordId, // Benzersiz tutanak ID'si
-                                isCreator: true, // Bu sayfa oluşturan tarafından görülüyor
-                                currentUserVehicleId: creatorVehicleIdFromDoc, // Firestore'dan çekilen
+                                recordId: widget.recordId, 
+                                isCreator: true, 
+                                currentUserVehicleId: creatorVehicleIdFromDoc, 
                               ),
                             ),
                           );
@@ -241,20 +239,11 @@ class _WaitingForConfirmationPageState extends State<WaitingForConfirmationPage>
                   ),
                   const SizedBox(height: 30),
                    TextButton.icon(
-                      icon: Icon(Icons.qr_code_scanner_rounded, color: theme.colorScheme.secondary), // İkon güncellendi
+                      icon: Icon(Icons.qr_code_scanner_rounded, color: theme.colorScheme.secondary), 
                       label: Text("QR Kodunu Tekrar Göster", style: TextStyle(color: theme.colorScheme.secondary)),
                       onPressed: (){
-                          // Kullanıcı QR kodunu tekrar göstermek için bir önceki sayfaya (QRDisplayPage) dönebilir.
-                          // pushReplacement ile gelindiyse, bu pop işlemi bir önceki (DriverAndVehicleInfoPage) sayfaya atar.
-                          // Bu akışın doğru yönetilmesi için QRDisplayPage'den push ile gelinmesi daha iyi olabilir
-                          // veya burada QRDisplayPage'e push ile yönlendirme yapılabilir.
-                          // Şimdilik basitçe pop yapıyoruz, bu QRDisplayPage'i tekrar açmaz,
-                          // DriverAndVehicleInfoPage'e döner. Bu istenen davranış olmayabilir.
-                          // Doğru davranış: QRDisplayPage'e geri dönmek.
-                          // Bu, QRDisplayPage'den pushReplacement yerine push ile gelinmesini gerektirir.
-                          // Veya buradan QRDisplayPage'e push edilebilir.
                           if (Navigator.canPop(context)) {
-                            Navigator.pop(context); // Bu, QRDisplayPage'e geri döner (eğer oradan push ile gelindiyse)
+                            Navigator.pop(context); 
                           } else {
                              ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('QR kodu bir önceki ekranda gösterilmişti. Ana sayfaya dönülüyor.'))
