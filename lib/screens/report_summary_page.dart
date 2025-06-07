@@ -92,7 +92,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
 
   final List<String> _secilenKazaDurumlari = [];
 
-  final String _ubuntuServerUrl = "http://100.110.23.124:5001/process_damage_image"; 
+  final String _ubuntuServerUrl = "http://100.71.209.113:5001/process_damage_image"; 
 
   @override
   void initState() {

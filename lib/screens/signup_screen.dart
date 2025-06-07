@@ -27,9 +27,6 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController driverLicenseIssuePlaceController = TextEditingController();
   final TextEditingController addressController = TextEditingController(); 
 
-  // ... (validateEmail, validatePassword, validateConfirmPassword, _inputDecoration metotları aynı kalabilir) ...
-  // _inputDecoration fonksiyonu zaten genel amaçlı, yeni alanlar için de kullanılabilir.
-
   String? validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Boş bırakıldı';
@@ -65,7 +62,6 @@ class _SignupScreenState extends State<SignupScreen> {
     return InputDecoration(
       labelText: labelText,
       prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: theme.colorScheme.primary) : null,
-      // Diğer inputDecoration stil ayarları (main.dart'tan geliyor veya burada override edilebilir)
     );
   }
 
@@ -146,7 +142,6 @@ class _SignupScreenState extends State<SignupScreen> {
               TextFormField(
                 controller: driverLicenseNoController,
                 decoration: _inputDecoration('Sürücü Belge No', prefixIcon: Icons.card_membership_outlined),
-                // validator: (value) => (value == null || value.trim().isEmpty) ? 'Boş bırakıldı' : null, // Opsiyonel olduğu için validator kaldırıldı veya yumuşatıldı
               ),
               SizedBox(height: 16),
               TextFormField(
@@ -171,9 +166,7 @@ class _SignupScreenState extends State<SignupScreen> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    // register fonksiyonunu güncellemeniz gerekecek
-                    // Bu yeni alanları da parametre olarak almalı ve Firestore'a kaydetmeli
-                    registerWithAdditionalInfo( // Yeni bir register fonksiyonu veya mevcut olanı güncelle
+                    registerWithAdditionalInfo(
                       context,
                       _formKey,
                       emailController.text.trim(),
@@ -200,7 +193,6 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 }
 
-// lib/models/user.dart dosyasına veya yeni bir auth_service.dart dosyasına eklenebilir:
 Future<void> registerWithAdditionalInfo(
   BuildContext context,
   GlobalKey<FormState> formKey,
@@ -215,7 +207,6 @@ Future<void> registerWithAdditionalInfo(
   String driverLicenseIssuePlace,
   String address,
 ) async {
-  // _isLoading state'i eklenebilir
   try {
     UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
       email: email,
@@ -257,6 +248,5 @@ Future<void> registerWithAdditionalInfo(
       );
     }
   } finally {
-    // _isLoading = false; (eğer state'li bir widget içindeyseniz)
   }
 }

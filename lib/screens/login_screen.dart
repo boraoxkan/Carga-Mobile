@@ -71,13 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      // AppBar isteğe bağlı, daha modern bir görünüm için kaldırılabilir veya transparan yapılabilir
-      // appBar: AppBar(
-      //   title: Text('Giriş Yap'),
-      //   elevation: 0,
-      //   backgroundColor: Colors.transparent, // Ya da tema rengi
-      // ),
-      body: SafeArea( // Ekran çentikleri vb. için
+      body: SafeArea( 
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0), 
@@ -104,7 +98,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: textTheme.titleMedium,
                   ),
                   const SizedBox(height: 32),
-                  // E-mail alanı
                   TextFormField(
                     controller: emailController,
                     decoration: InputDecoration(
@@ -146,7 +139,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (value == null || value.trim().isEmpty) {
                         return 'Şifrenizi giriniz.';
                       }
-                      // if (value.length < 6) { // İsteğe bağlı: minimum şifre uzunluğu
 
                       return null;
                     },
