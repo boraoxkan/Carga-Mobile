@@ -1,11 +1,11 @@
 // lib/screens/reports_page.dart
-import 'package:flutter/material.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tutanak/screens/pdf_viewer_page.dart';
 import 'package:tutanak/screens/report_detail_page.dart';
-// PDF görüntüleyici importu gerekirse:
-// import 'pdf_viewer_page.dart';
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({Key? key}) : super(key: key);
@@ -21,12 +21,12 @@ class ReportsPage extends StatefulWidget {
 }
 
 class _ReportsPageState extends State<ReportsPage> {
-  final String _dateFieldForOrdering = 'createdAt'; // Veya 'reportFinalizedTimestamp'
+  final String _dateFieldForOrdering = 'createdAt';
+
+  // --- Yardımcı Fonksiyonlar ---
 
   String _formatTimestamp(Timestamp? timestamp, BuildContext context) {
-    if (timestamp == null) {
-      return 'Tarih Bilgisi Yok';
-    }
+    if (timestamp == null) return 'Tarih Bilgisi Yok';
     final locale = Localizations.localeOf(context).toString();
     try {
       return DateFormat('dd MMMM yyyy, HH:mm', locale).format(timestamp.toDate());
@@ -37,12 +37,11 @@ class _ReportsPageState extends State<ReportsPage> {
 
   Future<void> _softDeleteReport(String recordId, String currentUserUid, Map<String, dynamic> reportData) async {
     final String creatorUid = reportData['creatorUid'] as String? ?? '';
-    // final String? joinerUid = reportData['joinerUid'] as String?;
-
     Map<String, dynamic> updateData = {};
+    
     if (currentUserUid == creatorUid) {
       updateData['isDeletedByCreator'] = true;
-    } else { 
+    } else {
       updateData['isDeletedByJoiner'] = true;
     }
 
@@ -64,17 +63,12 @@ class _ReportsPageState extends State<ReportsPage> {
     }
   }
 
-
+  // --- Ana Build Metodu ---
   @override
   Widget build(BuildContext context) {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text('Raporlarınızı görmek için lütfen giriş yapın.', textAlign: TextAlign.center),
-        ),
-      );
+      return const Center(child: Text('Raporlarınızı görmek için lütfen giriş yapın.'));
     }
 
     final theme = Theme.of(context);
@@ -86,17 +80,11 @@ class _ReportsPageState extends State<ReportsPage> {
             Filter.or(
               Filter.and(
                 Filter('creatorUid', isEqualTo: user.uid),
-                Filter.or(
-                  Filter('isDeletedByCreator', isEqualTo: false),
-                  Filter('isDeletedByCreator', isNull: true) 
-                )
+                Filter.or(Filter('isDeletedByCreator', isEqualTo: false), Filter('isDeletedByCreator', isNull: true))
               ),
               Filter.and(
                 Filter('joinerUid', isEqualTo: user.uid),
-                 Filter.or(
-                  Filter('isDeletedByJoiner', isEqualTo: false),
-                  Filter('isDeletedByJoiner', isNull: true) 
-                )
+                 Filter.or(Filter('isDeletedByJoiner', isEqualTo: false), Filter('isDeletedByJoiner', isNull: true))
               )
             )
           )
@@ -107,60 +95,10 @@ class _ReportsPageState extends State<ReportsPage> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          // Hata mesajını ve stack trace'i konsola yazdır
-          print("Raporlar sayfasında Firestore sorgu hatası: ${snapshot.error}");
-          print("Hata stack trace: ${snapshot.stackTrace}");
-          // Kullanıcıya daha genel bir hata mesajı göster
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: theme.colorScheme.error, size: 50),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Raporlar yüklenirken bir sorun oluştu.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    'Lütfen daha sonra tekrar deneyin veya internet bağlantınızı kontrol edin.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-                  ),
-                  // Geliştirme aşamasında hatayı görmek için:
-                  // Text('Detay: ${snapshot.error}', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                ],
-              ),
-            )
-          );
+          return Center(child: Text('Hata: ${snapshot.error}'));
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.folder_off_outlined, size: 80, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5)),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Görüntülenecek rapor bulunmuyor.',
-                    style: theme.textTheme.headlineSmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 10),
-                   Text(
-                    "Oluşturduğunuz veya katıldığınız tutanaklar burada listelenir.",
-                    style: theme.textTheme.titleMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            )
-          );
+          return const Center(child: Text('Görüntülenecek rapor bulunmuyor.'));
         }
 
         final reports = snapshot.data!.docs;
@@ -169,14 +107,60 @@ class _ReportsPageState extends State<ReportsPage> {
           itemCount: reports.length,
           itemBuilder: (context, index) {
             final reportDoc = reports[index];
-            final report = reportDoc.data(); 
+            final report = reportDoc.data();
             
             Timestamp? reportTimestamp = report[_dateFieldForOrdering] as Timestamp? ?? report['reportFinalizedTimestamp'] as Timestamp?;
             String title = _formatTimestamp(reportTimestamp, context);
             String status = report['status'] as String? ?? "Bilinmiyor";
-            
-            bool hasProcessedPhoto = report.containsKey('creatorProcessedDamageImageBase64') ||
-                                     report.containsKey('joinerProcessedDamageImageBase64');
+            bool hasProcessedPhoto = report.containsKey('creatorProcessedDamageImageBase64') || report.containsKey('joinerProcessedDamageImageBase64');
+
+            // ---------- YENİ BUTON MANTIĞI BAŞLANGICI ----------
+            final String? aiPdfUrl = report['aiReportPdfUrl'] as String?;
+            final String? aiReportStatus = report['aiReportStatus'] as String?;
+
+            Widget aiButtonLeading;
+            String aiButtonTitle = "AI Sigorta Raporu";
+            String? aiButtonSubtitle;
+            VoidCallback? aiButtonOnTap;
+
+            // Durum 1: PDF hazır ve görüntülenebilir.
+            if (aiPdfUrl != null && aiPdfUrl.isNotEmpty) {
+                aiButtonLeading = Icon(Icons.picture_as_pdf_rounded, color: theme.colorScheme.secondary);
+                aiButtonTitle = "AI Raporunu Görüntüle";
+                aiButtonOnTap = () {
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (context) => PdfViewerPage(pdfUrl: aiPdfUrl, title: "AI Sigorta Raporu"),
+                    ));
+                };
+            } 
+            // Durum 2: Rapor tamamlanmış ama PDF henüz hazır değil (veya hata oluşmuş).
+            else if (status == 'all_data_submitted') {
+                if (aiReportStatus == 'Failed') {
+                    aiButtonLeading = Icon(Icons.error_outline, color: theme.colorScheme.error);
+                    aiButtonTitle = "AI Raporu Oluşturulamadı";
+                    aiButtonSubtitle = "Bir hata oluştu. Detaylar için tıklayın."; // Opsiyonel
+                    aiButtonOnTap = () {
+                      showDialog(context: context, builder: (context) => AlertDialog(
+                        title: Text("Oluşturma Hatası"),
+                        content: Text("Rapor oluşturulurken bir sunucu hatası meydana geldi. Lütfen daha sonra tekrar deneyin veya geliştirici ile iletişime geçin.\n\nHata Detayı: ${report['aiReportError'] ?? 'Bilinmiyor'}"),
+                        actions: [TextButton(onPressed: ()=>Navigator.pop(context), child: Text("Tamam"))],
+                      ));
+                    };
+                } else {
+                    aiButtonLeading = SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.secondary,));
+                    aiButtonTitle = "AI Raporu Oluşturuluyor";
+                    aiButtonSubtitle = "Bu işlem birkaç dakika sürebilir...";
+                    aiButtonOnTap = null; // Oluşturulurken tıklanamaz.
+                }
+            } 
+            // Durum 3: Rapor henüz tamamlanmamış.
+            else {
+                aiButtonLeading = Icon(Icons.hourglass_empty_rounded, color: Colors.grey);
+                aiButtonTitle = "AI Sigorta Raporu";
+                aiButtonSubtitle = "Tüm taraflar bilgilerini tamamladığında oluşturulacak.";
+                aiButtonOnTap = null; // Henüz hazır değilken tıklanamaz.
+            }
+            // ---------- YENİ BUTON MANTIĞI SONU ----------
 
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
@@ -187,39 +171,34 @@ class _ReportsPageState extends State<ReportsPage> {
                   color: hasProcessedPhoto ? theme.colorScheme.primary : theme.colorScheme.secondary,
                   size: 32,
                 ),
-                title: Text(
-                  title,
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(
-                  "Durum: $status\nID: ${reportDoc.id.substring(0, 10)}...",
-                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                ),
+                title: Text(title, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+                subtitle: Text("Durum: $status\nID: ${reportDoc.id.substring(0, 10)}..."),
                 childrenPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 expandedCrossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
-                    "Tutanak ID: ${reportDoc.id}",
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                  ),
+                  Text("Tutanak ID: ${reportDoc.id}", style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                   const SizedBox(height: 10),
                   ListTile(
                     leading: Icon(Icons.visibility_outlined, color: theme.colorScheme.primary),
                     title: const Text('Tutanak Detaylarını Görüntüle'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ReportDetailPage(recordId: reportDoc.id),
-                        ),
-                      );
-                    },
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ReportDetailPage(recordId: reportDoc.id))),
                   ),
+
+                  // --- GÜNCELLENMİŞ BUTON KULLANIMI ---
+                  ListTile(
+                    leading: aiButtonLeading,
+                    title: Text(aiButtonTitle),
+                    subtitle: aiButtonSubtitle != null ? Text(aiButtonSubtitle) : null,
+                    enabled: aiButtonOnTap != null,
+                    onTap: aiButtonOnTap,
+                  ),
+                  // --- BİTİŞ ---
+
                   ListTile(
                     leading: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error),
                     title: Text('Bu Tutanağı Listemden Kaldır', style: TextStyle(color: theme.colorScheme.error)),
                     onTap: () async {
-                      bool confirm = await showDialog<bool>(
+                       bool confirm = await showDialog<bool>(
                         context: context,
                         builder: (BuildContext dialogContext) => AlertDialog(
                           title: const Text('Listeden Kaldırma Onayı'),

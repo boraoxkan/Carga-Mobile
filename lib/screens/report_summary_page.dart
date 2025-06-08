@@ -56,6 +56,7 @@ class ReportSummaryPage extends StatefulWidget {
 }
 
 class _ReportSummaryPageState extends State<ReportSummaryPage> {
+  // --- STATE ve CONTROLLER'LAR ---
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _notesController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
@@ -63,7 +64,9 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
   Uint8List? _processedImageBytesFromUbuntu;
   List<dynamic>? _detectionResultsFromUbuntu;
   bool _isProcessingAndSaving = false;
+  String _loadingMessage = "Tutanak bilgileri gönderiliyor..."; // Yeni loading mesajı
 
+  // Diğer tarafa ait veriler
   Map<String, dynamic>? _otherPartyUserData;
   Map<String, dynamic>? _otherPartyVehicleData;
   Set<CrashRegion> _otherPartySelectedRegions = {};
@@ -73,32 +76,78 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
   String? _otherPartyNotes;
   bool _isLoadingOtherPartyData = true;
 
+  // Adres ve tarih bilgileri
   String? _address;
   bool _isFetchingAddress = true;
   String? _addressError;
-
   DateTime _kazaTarihi = DateTime.now();
   TimeOfDay _kazaSaati = TimeOfDay.now();
 
+  // Diğer Form controller'ları...
   final TextEditingController _ilceController = TextEditingController();
   final TextEditingController _semtController = TextEditingController();
   final TextEditingController _mahalleController = TextEditingController();
   final TextEditingController _caddeController = TextEditingController();
   final TextEditingController _sokakController = TextEditingController();
-
   final TextEditingController _tanik1AdiSoyadiController = TextEditingController();
   final TextEditingController _tanik1AdresController = TextEditingController();
   final TextEditingController _tanik1TelController = TextEditingController();
-
   final List<String> _secilenKazaDurumlari = [];
 
-  final String _ubuntuServerUrl = "http://100.71.209.113:5001/process_damage_image"; 
+  // --- SUNUCU ADRESLERİ ---
+  final String _damageDetectionServerUrl = "http://100.71.209.113:5001/process_damage_image";
+  final String _aiPdfServerUrl = "http://100.71.209.113:6001/generate_ai_pdf_report";
+
 
   @override
   void initState() {
     super.initState();
     _loadInitialRecordData();
     _fetchOtherPartyData();
+  }
+
+  dynamic _convertDataToJsonSerializable(dynamic data) {
+    if (data == null) return null;
+    if (data is Timestamp) return data.toDate().toIso8601String();
+    if (data is GeoPoint) return {'latitude': data.latitude, 'longitude': data.longitude};
+    if (data is LatLng) return {'latitude': data.latitude, 'longitude': data.longitude};
+    if (data is Map) return data.map((key, value) => MapEntry(key.toString(), _convertDataToJsonSerializable(value)));
+    if (data is List) return data.map((item) => _convertDataToJsonSerializable(item)).toList();
+    return data;
+  }
+
+  Future<Map<String, dynamic>?> _fetchFullUserDetails(String? userId) async {
+    if (userId == null || userId.isEmpty) return null;
+    final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    return doc.exists ? doc.data() : null;
+  }
+
+  Future<Map<String, dynamic>?> _fetchFullVehicleDetails(String? userId, String? vehicleId) async {
+    if (userId == null || userId.isEmpty || vehicleId == null || vehicleId.isEmpty) return null;
+    final doc = await FirebaseFirestore.instance.collection('users').doc(userId).collection('vehicles').doc(vehicleId).get();
+    return doc.exists ? doc.data() : null;
+  }
+
+  Future<Map<String, dynamic>> _prepareDataForAi(Map<String, dynamic> currentRecordData) async {
+    Map<String, dynamic> dataForAi = _convertDataToJsonSerializable(Map<String, dynamic>.from(currentRecordData));
+    final creatorUid = currentRecordData['creatorUid'] as String?;
+    final joinerUid = currentRecordData['joinerUid'] as String?;
+
+    if (creatorUid != null) {
+      dataForAi['creatorUserData'] = _convertDataToJsonSerializable(await _fetchFullUserDetails(creatorUid));
+      dataForAi['creatorVehicleInfo'] = _convertDataToJsonSerializable(await _fetchFullVehicleDetails(creatorUid, currentRecordData['creatorVehicleId'] as String?));
+    }
+    if (joinerUid != null) {
+      dataForAi['joinerUserData'] = _convertDataToJsonSerializable(await _fetchFullUserDetails(joinerUid));
+      dataForAi['joinerVehicleInfo'] = _convertDataToJsonSerializable(await _fetchFullVehicleDetails(joinerUid, currentRecordData['joinerVehicleId'] as String?));
+    }
+    if (currentRecordData['kazaTimestamp'] is Timestamp) {
+      DateTime kazaDT = (currentRecordData['kazaTimestamp'] as Timestamp).toDate();
+      dataForAi['kazaTarihi'] = DateFormat('dd.MM.yyyy', 'tr_TR').format(kazaDT);
+      dataForAi['kazaSaati'] = DateFormat('HH:mm').format(kazaDT);
+    }
+    dataForAi['recordId'] = widget.recordId;
+    return dataForAi;
   }
 
   Future<void> _loadInitialRecordData() async {
@@ -423,7 +472,7 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
     if (mounted) setState(() => _isProcessingAndSaving = true);
     try {
       File file = File(_selectedImageFileForUbuntu!.path);
-      var request = http.MultipartRequest('POST', Uri.parse(_ubuntuServerUrl));
+      var request = http.MultipartRequest('POST', Uri.parse(_damageDetectionServerUrl));
       request.files.add(await http.MultipartFile.fromPath(
         'image', file.path,
         contentType: MediaType('image', path.extension(file.path).replaceAll('.', '')),
@@ -473,32 +522,120 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lütfen giriş yapın.')));
       return;
     }
+    if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lütfen * ile işaretli zorunlu alanları doldurun.')));
+       return;
+    }
     if (widget.selectedRegions.isEmpty && _notesController.text.trim().isEmpty && _selectedImageFileForUbuntu == null && _processedImageBytesFromUbuntu == null) {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lütfen hasar bölgesi, fotoğraf veya not gibi en az bir bilgi girin.')));
         return;
     }
 
-    if (mounted) setState(() => _isProcessingAndSaving = true);
+    setState(() {
+      _isProcessingAndSaving = true;
+      _loadingMessage = "Bilgileriniz kaydediliyor...";
+    });
+    
     try {
+      // ADIM 1: Önce kullanıcının kendi bilgilerini kaydet.
+      // Bu mantık if/else bloğundan çıkarılıp birleştirildi.
       if (_selectedImageFileForUbuntu != null && _processedImageBytesFromUbuntu == null) {
           await _processWithUbuntuServerAndSave();
       } else {
           await _saveCurrentUserDataToFirestore(
-            processedImageBase64: _processedImageBytesFromUbuntu != null ? base64Encode(_processedImageBytesFromUbuntu!) : null,
-            detectionResults: _detectionResultsFromUbuntu
+              processedImageBase64: _processedImageBytesFromUbuntu != null ? base64Encode(_processedImageBytesFromUbuntu!) : null,
+              detectionResults: _detectionResultsFromUbuntu
           );
-          if(mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tutanak bilgileriniz başarıyla kaydedildi.')));
-              Navigator.popUntil(context, (route) => route.isFirst);
-          }
       }
-    } catch (e,s) {
+
+      // ADIM 2: Kaydetme sonrası Firestore'dan belgenin güncel halini tekrar çek.
+      print("Kullanıcı verisi kaydedildi, raporun son durumu kontrol ediliyor...");
+      final recordDoc = await FirebaseFirestore.instance.collection('records').doc(widget.recordId).get();
+      
+      // ADIM 3: Raporun durumunu kontrol et ve gerekirse AI sürecini başlat.
+      final currentStatus = recordDoc.data()?['status'] as String?;
+      print("RAPORUN GÜNCEL DURUMU: $currentStatus"); // DEBUG İÇİN KONSOL ÇIKTISI
+
+      if (mounted && recordDoc.exists && currentStatus == 'all_data_submitted') {
+          print("Tüm taraflar onayladı. AI raporu oluşturma süreci başlıyor: ${widget.recordId}");
+          
+          // Kullanıcıya bilgi ver.
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Tüm bilgiler tamamlandı. AI raporu arka planda oluşturuluyor...'),
+              duration: Duration(seconds: 4),
+          ));
+
+          // AI raporu oluşturma ve kaydetme işlemini "fire-and-forget" olarak başlat.
+          // Bu fonksiyonun bitmesini BEKLEMİYORUZ, böylece kullanıcı ana sayfaya hemen dönebilir.
+          _initiateAndFinalizeAiReport(widget.recordId);
+      }
+      
+      // ADIM 4: Kullanıcıyı ana sayfaya yönlendir.
+      if(mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tutanak bilgileriniz başarıyla kaydedildi.')));
+          Navigator.popUntil(context, (route) => route.isFirst);
+      }
+
+    } catch (e, s) {
         print("Rapor gönderiminde genel hata (_handleReportSubmission): $e\n$s");
-        if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Rapor gönderilirken bir hata oluştu: $e')));
-    } finally {
-        if(mounted && _isProcessingAndSaving && (_selectedImageFileForUbuntu == null || _processedImageBytesFromUbuntu != null) ) {
-           setState(() => _isProcessingAndSaving = false);
+        if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Rapor gönderilirken bir hata oluştu: $e')));
         }
+    } finally {
+        if (mounted) {
+            setState(() => _isProcessingAndSaving = false);
+        }
+    }
+  }
+
+  Future<void> _initiateAndFinalizeAiReport(String recordId) async {
+    if (!mounted) return;
+    
+    try {
+      print("AI Süreci: Firestore'dan tam veri çekiliyor...");
+      final doc = await FirebaseFirestore.instance.collection('records').doc(recordId).get();
+      if (!doc.exists) throw Exception("AI Raporu oluşturulacak kayıt bulunamadı.");
+      
+      print("AI Süreci: Veri hazırlanıyor ve sunucuya gönderiliyor...");
+      Map<String, dynamic> dataToSend = await _prepareDataForAi(doc.data()!);
+      final String jsonBody = jsonEncode(dataToSend);
+
+      final response = await http.post(
+          Uri.parse(_aiPdfServerUrl),
+          headers: {'Content-Type': 'application/json; charset=UTF-8'},
+          body: jsonBody,
+      ).timeout(const Duration(seconds: 120));
+
+      if (response.statusCode != 200) {
+          throw Exception("AI PDF sunucusu hatası: ${response.statusCode}. Detay: ${response.body}");
+      }
+      
+      final Uint8List pdfBytes = response.bodyBytes;
+      print("AI Süreci: PDF verisi sunucudan alındı. Firebase Storage'a yükleniyor...");
+
+      final storageRef = firebase_storage.FirebaseStorage.instance.ref('ai_reports/$recordId.pdf');
+      await storageRef.putData(pdfBytes, firebase_storage.SettableMetadata(contentType: 'application/pdf'));
+
+      final String downloadUrl = await storageRef.getDownloadURL();
+      print("AI Süreci: PDF yüklendi. URL Firestore'a kaydediliyor: $downloadUrl");
+      
+      await FirebaseFirestore.instance.collection('records').doc(recordId).update({
+          'aiReportPdfUrl': downloadUrl,
+          'aiReportStatus': 'Completed',
+      });
+
+      print("AI Raporu başarıyla oluşturuldu ve Firestore'a kaydedildi.");
+
+    } catch(e) {
+      print("AI raporunu sonlandırma sürecinde hata: $e");
+      try {
+        await FirebaseFirestore.instance.collection('records').doc(recordId).update({
+            'aiReportStatus': 'Failed',
+            'aiReportError': e.toString().substring(0, 200),
+        });
+      } catch (firestoreError) {
+        print("AI hata durumunu Firestore'a yazarken ek hata oluştu: $firestoreError");
+      }
     }
   }
 

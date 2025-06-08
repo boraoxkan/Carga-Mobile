@@ -24,6 +24,10 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   final String _pdfServerBaseUrl = "http://100.71.209.113:6001";
   final String _pdfGenerationEndpoint = "/generate_accident_report_pdf";
 
+  final String _aiServerBaseUrls = "http://100.71.209.113:6001";
+  bool _isGeneratingAiReport = false;
+  final String _aiServerEndpoint = "/generate_ai_report"; // Yeni endpoint
+
   Map<String, dynamic>? _recordData;
   bool _isGeneratingPdf = false;
 
@@ -153,6 +157,83 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     } catch (e) {
       print("Araç detayı çekilirken hata (user: $userId, vehicle: $vehicleId): $e");
       return null;
+    }
+  }
+
+  Future<void> _generateAiInsuranceReport() async {
+    if (_recordData == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Rapor verileri henüz yüklenmedi.")));
+      return;
+    }
+    setState(() => _isGeneratingAiReport = true);
+
+    try {
+      // 1. Veriyi sunucuya göndermek için hazırla (mevcut fonksiyonu kullanabiliriz)
+      Map<String, dynamic> dataToSend = await _prepareDataForPdfGeneration(Map<String, dynamic>.from(_recordData!));
+
+      // 2. Hazırlanan veriyi JSON'a çevir
+      final String jsonBody = jsonEncode(dataToSend);
+
+      // 3. Yeni AI endpoint'ine isteği gönder
+      final response = await http.post(
+        Uri.parse("$_aiServerBaseUrls$_aiServerEndpoint"), // Yeni URL
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonBody,
+      ).timeout(const Duration(seconds: 120)); // AI'ın yanıt vermesi daha uzun sürebilir.
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        // Sunucudan gelen yanıtın ya düz metin (JSON içinde) ya da doğrudan PDF olduğunu varsayalım.
+        // Örnek: JSON yanıtı -> {"report_text": "Sayın Sigorta Yetkilisi..."}
+        // Örnek: PDF yanıtı -> response.bodyBytes
+        
+        // Yanıtın PDF mi yoksa metin mi olduğunu kontrol edelim
+        final contentType = response.headers['content-type'];
+
+        if (contentType != null && contentType.contains('application/pdf')) {
+          // Yanıt PDF ise
+          final Uint8List pdfBytes = response.bodyBytes;
+          final directory = await getTemporaryDirectory();
+          final filePath = '${directory.path}/ai_sigorta_raporu_${widget.recordId}.pdf';
+          await File(filePath).writeAsBytes(pdfBytes);
+          
+          Navigator.push(context, MaterialPageRoute(
+            builder: (context) => PdfViewerPage(pdfPath: filePath, title: "AI Sigorta Raporu"),
+          ));
+
+        } else {
+          // Yanıt JSON ise (metin içeriyor)
+          final responseData = json.decode(utf8.decode(response.bodyBytes));
+          final String aiGeneratedText = responseData['report_text'];
+
+          // Metni göstermek için yeni bir dialog veya sayfa aç
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text("AI Tarafından Oluşturulan Rapor"),
+              content: Scrollbar(child: SingleChildScrollView(child: Text(aiGeneratedText))),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text("Kapat"))
+              ],
+            )
+          );
+        }
+
+      } else {
+        throw Exception("AI Sunucu hatası: ${response.statusCode} - ${response.body}");
+      }
+
+    } catch (e) {
+      print("AI Raporu oluşturma sırasında genel hata: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("AI raporu oluşturulurken bir hata oluştu: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ));
+      }
+    } finally {
+        if(mounted) setState(() => _isGeneratingAiReport = false);
     }
   }
 
