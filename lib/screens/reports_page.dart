@@ -184,15 +184,71 @@ class _ReportsPageState extends State<ReportsPage> {
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ReportDetailPage(recordId: reportDoc.id))),
                   ),
 
-                  // --- GÜNCELLENMİŞ BUTON KULLANIMI ---
-                  ListTile(
-                    leading: aiButtonLeading,
-                    title: Text(aiButtonTitle),
-                    subtitle: aiButtonSubtitle != null ? Text(aiButtonSubtitle) : null,
-                    enabled: aiButtonOnTap != null,
-                    onTap: aiButtonOnTap,
+                  Builder(
+                    builder: (context) {
+                      // Gerekli verileri Firestore'dan alıyoruz
+                      final String? aiPdfUrl = report['aiReportPdfUrl'] as String?;
+                      final String? aiReportStatus = report['aiReportStatus'] as String?;
+
+                      // Butonun görünümünü ve işlevini belirleyecek değişkenler
+                      Widget aiButtonLeading;
+                      String aiButtonTitle = "AI Sigorta Raporu";
+                      String? aiButtonSubtitle;
+                      VoidCallback? aiButtonOnTap;
+
+                      // Durum 1: PDF URL'si varsa, rapor tamamlanmıştır ve görüntülenebilir.
+                      if (aiPdfUrl != null && aiPdfUrl.isNotEmpty) {
+                          aiButtonLeading = Icon(Icons.picture_as_pdf_rounded, color: theme.colorScheme.secondary);
+                          aiButtonTitle = "AI Raporunu Görüntüle";
+                          aiButtonOnTap = () {
+                              Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) => PdfViewerPage(pdfUrl: aiPdfUrl, title: "AI Sigorta Raporu"),
+                              ));
+                          };
+                      } 
+                      // Durum 2: Rapor durumu 'Processing' olarak işaretlenmişse, yükleme göstergesi gösterilir.
+                      else if (aiReportStatus == 'Processing') {
+                          aiButtonLeading = SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.secondary,));
+                          aiButtonTitle = "AI Raporu Oluşturuluyor";
+                          aiButtonSubtitle = "Bu işlem birkaç dakika sürebilir...";
+                          aiButtonOnTap = null; // Oluşturulurken tıklanamaz.
+                      }
+                      // Durum 3: Rapor durumu 'Failed' ise kullanıcıya hata gösterilir.
+                      else if (aiReportStatus == 'Failed') {
+                          aiButtonLeading = Icon(Icons.error_outline, color: theme.colorScheme.error);
+                          aiButtonTitle = "AI Raporu Oluşturulamadı";
+                          aiButtonSubtitle = "Bir hata oluştu. Detaylar için tıklayın.";
+                          aiButtonOnTap = () {
+                            showDialog(context: context, builder: (context) => AlertDialog(
+                              title: Text("Oluşturma Hatası"),
+                              content: Text("Rapor oluşturulurken bir sunucu hatası meydana geldi. Lütfen daha sonra tekrar deneyin veya geliştirici ile iletişime geçin.\n\nHata Detayı: ${report['aiReportError'] ?? 'Bilinmiyor'}"),
+                              actions: [TextButton(onPressed: ()=>Navigator.pop(context), child: Text("Tamam"))],
+                            ));
+                          };
+                      } 
+                      // Durum 4: Diğer tüm durumlar (raporun henüz tamamlanmaması, AI sürecinin başlamaması vb.)
+                      else {
+                          aiButtonLeading = Icon(Icons.hourglass_empty_rounded, color: Colors.grey);
+                          aiButtonTitle = "AI Sigorta Raporu";
+                          // Raporun ana durumu 'all_data_submitted' ise kullanıcıya beklemede olduğunu belirt
+                          if (status == 'all_data_submitted') {
+                            aiButtonSubtitle = "Oluşturma işlemi için hazırlanıyor...";
+                          } else {
+                            aiButtonSubtitle = "Tüm taraflar bilgilerini tamamladığında oluşturulacak.";
+                          }
+                          aiButtonOnTap = null; // Henüz hazır değilken tıklanamaz.
+                      }
+
+                      // Yukarıdaki mantığa göre oluşturulan butonu ListTile içinde gösteriyoruz.
+                      return ListTile(
+                        leading: aiButtonLeading,
+                        title: Text(aiButtonTitle),
+                        subtitle: aiButtonSubtitle != null ? Text(aiButtonSubtitle) : null,
+                        enabled: aiButtonOnTap != null,
+                        onTap: aiButtonOnTap,
+                      );
+                    }
                   ),
-                  // --- BİTİŞ ---
 
                   ListTile(
                     leading: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error),

@@ -538,10 +538,12 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
     
     try {
       // ADIM 1: Önce kullanıcının kendi bilgilerini kaydet.
-      // Bu mantık if/else bloğundan çıkarılıp birleştirildi.
+      // Eğer yeni bir fotoğraf seçildiyse sunucuda işle ve kaydet.
       if (_selectedImageFileForUbuntu != null && _processedImageBytesFromUbuntu == null) {
-          await _processWithUbuntuServerAndSave();
+          // Bu fonksiyon içinde zaten _saveCurrentUserDataToFirestore çağrılıyor.
+          await _processWithUbuntuServerAndSave(); 
       } else {
+          // Yeni fotoğraf yoksa mevcut bilgileri direkt kaydet.
           await _saveCurrentUserDataToFirestore(
               processedImageBase64: _processedImageBytesFromUbuntu != null ? base64Encode(_processedImageBytesFromUbuntu!) : null,
               detectionResults: _detectionResultsFromUbuntu
@@ -549,25 +551,33 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
       }
 
       // ADIM 2: Kaydetme sonrası Firestore'dan belgenin güncel halini tekrar çek.
-      print("Kullanıcı verisi kaydedildi, raporun son durumu kontrol ediliyor...");
       final recordDoc = await FirebaseFirestore.instance.collection('records').doc(widget.recordId).get();
       
-      // ADIM 3: Raporun durumunu kontrol et ve gerekirse AI sürecini başlat.
+      if (!recordDoc.exists) {
+        throw Exception("Rapor kaydı bulunamadı. Lütfen tekrar deneyin.");
+      }
+      
+      // ADIM 3: Raporun durumunu kontrol et ve GEREKİRSE AI sürecini başlat.
       final currentStatus = recordDoc.data()?['status'] as String?;
-      print("RAPORUN GÜNCEL DURUMU: $currentStatus"); // DEBUG İÇİN KONSOL ÇIKTISI
-
-      if (mounted && recordDoc.exists && currentStatus == 'all_data_submitted') {
-          print("Tüm taraflar onayladı. AI raporu oluşturma süreci başlıyor: ${widget.recordId}");
-          
-          // Kullanıcıya bilgi ver.
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text('Tüm bilgiler tamamlandı. AI raporu arka planda oluşturuluyor...'),
-              duration: Duration(seconds: 4),
-          ));
-
-          // AI raporu oluşturma ve kaydetme işlemini "fire-and-forget" olarak başlat.
-          // Bu fonksiyonun bitmesini BEKLEMİYORUZ, böylece kullanıcı ana sayfaya hemen dönebilir.
-          _initiateAndFinalizeAiReport(widget.recordId);
+      
+      if (mounted && currentStatus == 'all_data_submitted') {
+          // AI raporu oluşturulmamışsa veya başarısız olduysa işlemi başlat.
+          final aiStatus = recordDoc.data()?['aiReportStatus'] as String?;
+          if (aiStatus == null || aiStatus == 'Failed') {
+            
+            // ÖNCE AI DURUMUNU 'Processing' OLARAK İŞARETLE!
+            await FirebaseFirestore.instance.collection('records').doc(widget.recordId).update({
+              'aiReportStatus': 'Processing',
+            });
+            
+            // Şimdi AI sürecini güvenle başlatabiliriz.
+            _initiateAndFinalizeAiReport(widget.recordId);
+            
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Tüm bilgiler tamamlandı. AI raporu arka planda oluşturuluyor...'),
+                duration: Duration(seconds: 4),
+            ));
+          }
       }
       
       // ADIM 4: Kullanıcıyı ana sayfaya yönlendir.
