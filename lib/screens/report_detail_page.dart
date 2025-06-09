@@ -61,11 +61,10 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
       final creatorUid = currentRecordData['creatorUid'] as String?;
       final joinerUid = currentRecordData['joinerUid'] as String?;
 
+      // İlgili sürücü ve araçların tam detaylarını Firestore'dan çekip JSON'a ekle
       if (creatorUid != null) {
         final creatorDetails = await _fetchFullUserDetails(creatorUid);
         final creatorVehicleDetails = await _fetchFullVehicleDetails(creatorUid, currentRecordData['creatorVehicleId'] as String?);
-        
-        // Çekilen ek verileri de temizleyerek ana veriye ekle
         dataForPdf['creatorUserData'] = _convertDataToJsonSerializable(creatorDetails);
         dataForPdf['creatorVehicleInfo'] = _convertDataToJsonSerializable(creatorVehicleDetails);
       }
@@ -73,15 +72,15 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
       if (joinerUid != null) {
         final joinerDetails = await _fetchFullUserDetails(joinerUid);
         final joinerVehicleDetails = await _fetchFullVehicleDetails(joinerUid, currentRecordData['joinerVehicleId'] as String?);
-        
         dataForPdf['joinerUserData'] = _convertDataToJsonSerializable(joinerDetails);
         dataForPdf['joinerVehicleInfo'] = _convertDataToJsonSerializable(joinerVehicleDetails);
       }
 
+      // Şablondaki 7. bölüm için gerekli olan dinamik listeyi oluştur
       // kazaDurumlariListesi'ni report_summary_page.dart dosyasından alıyoruz.
       const List<String> tumKazaDurumlari = kazaDurumlariListesi;
 
-      // Creator ve Joiner için seçilen durumları alalım
+      // Creator ve Joiner için seçilen durumları al
       final List<String> creatorSecilenler = List<String>.from(currentRecordData['creatorKazaDurumlari'] ?? []);
       final List<String> joinerSecilenler = List<String>.from(currentRecordData['joinerKazaDurumlari'] ?? []);
 
