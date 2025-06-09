@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tutanak/screens/pdf_viewer_page.dart';
+import 'package:tutanak/screens/report_summary_page.dart';
 
 class ReportDetailPage extends StatefulWidget {
   final String recordId;
@@ -54,38 +55,54 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
 
   /// VERİ HAZIRLAMA FONKSİYONU: Verileri toplayıp temizleyerek sunucuya hazırlar.
   Future<Map<String, dynamic>> _prepareDataForPdfGeneration(Map<String, dynamic> currentRecordData) async {
-    // Başlangıç olarak tüm record verisini temizle
-    Map<String, dynamic> dataForPdf = _convertDataToJsonSerializable(Map<String, dynamic>.from(currentRecordData));
+      // Başlangıç olarak tüm record verisini temizle
+      Map<String, dynamic> dataForPdf = _convertDataToJsonSerializable(Map<String, dynamic>.from(currentRecordData));
 
-    final creatorUid = currentRecordData['creatorUid'] as String?;
-    final joinerUid = currentRecordData['joinerUid'] as String?;
+      final creatorUid = currentRecordData['creatorUid'] as String?;
+      final joinerUid = currentRecordData['joinerUid'] as String?;
 
-    if (creatorUid != null) {
-      final creatorDetails = await _fetchFullUserDetails(creatorUid);
-      final creatorVehicleDetails = await _fetchFullVehicleDetails(creatorUid, currentRecordData['creatorVehicleId'] as String?);
+      if (creatorUid != null) {
+        final creatorDetails = await _fetchFullUserDetails(creatorUid);
+        final creatorVehicleDetails = await _fetchFullVehicleDetails(creatorUid, currentRecordData['creatorVehicleId'] as String?);
+        
+        // Çekilen ek verileri de temizleyerek ana veriye ekle
+        dataForPdf['creatorUserData'] = _convertDataToJsonSerializable(creatorDetails);
+        dataForPdf['creatorVehicleInfo'] = _convertDataToJsonSerializable(creatorVehicleDetails);
+      }
       
-      // Çekilen ek verileri de temizleyerek ana veriye ekle
-      dataForPdf['creatorUserData'] = _convertDataToJsonSerializable(creatorDetails);
-      dataForPdf['creatorVehicleInfo'] = _convertDataToJsonSerializable(creatorVehicleDetails);
-    }
-    
-    if (joinerUid != null) {
-      final joinerDetails = await _fetchFullUserDetails(joinerUid);
-      final joinerVehicleDetails = await _fetchFullVehicleDetails(joinerUid, currentRecordData['joinerVehicleId'] as String?);
-      
-      dataForPdf['joinerUserData'] = _convertDataToJsonSerializable(joinerDetails);
-      dataForPdf['joinerVehicleInfo'] = _convertDataToJsonSerializable(joinerVehicleDetails);
-    }
+      if (joinerUid != null) {
+        final joinerDetails = await _fetchFullUserDetails(joinerUid);
+        final joinerVehicleDetails = await _fetchFullVehicleDetails(joinerUid, currentRecordData['joinerVehicleId'] as String?);
+        
+        dataForPdf['joinerUserData'] = _convertDataToJsonSerializable(joinerDetails);
+        dataForPdf['joinerVehicleInfo'] = _convertDataToJsonSerializable(joinerVehicleDetails);
+      }
 
-    // Şablonda kolay kullanım için tarih ve saati ayrıca formatla
-    if (currentRecordData['kazaTimestamp'] is Timestamp) {
-      DateTime kazaDT = (currentRecordData['kazaTimestamp'] as Timestamp).toDate();
-      dataForPdf['kazaTarihi'] = DateFormat('dd.MM.yyyy', 'tr_TR').format(kazaDT);
-      dataForPdf['kazaSaati'] = DateFormat('HH:mm').format(kazaDT);
-    }
-    
-    dataForPdf['recordId'] = widget.recordId;
-    return dataForPdf;
+      // kazaDurumlariListesi'ni report_summary_page.dart dosyasından alıyoruz.
+      const List<String> tumKazaDurumlari = kazaDurumlariListesi;
+
+      // Creator ve Joiner için seçilen durumları alalım
+      final List<String> creatorSecilenler = List<String>.from(currentRecordData['creatorKazaDurumlari'] ?? []);
+      final List<String> joinerSecilenler = List<String>.from(currentRecordData['joinerKazaDurumlari'] ?? []);
+
+      // Şablon için her bir durumu ve 'checked' durumunu içeren bir Map listesi oluştur
+      dataForPdf['creatorKazaDurumlariFormatted'] = tumKazaDurumlari.map((durum) {
+        return {'durum': durum, 'checked': creatorSecilenler.contains(durum)};
+      }).toList();
+      
+      dataForPdf['joinerKazaDurumlariFormatted'] = tumKazaDurumlari.map((durum) {
+        return {'durum': durum, 'checked': joinerSecilenler.contains(durum)};
+      }).toList();
+
+      // Şablonda kolay kullanım için tarih ve saati ayrıca formatla
+      if (currentRecordData['kazaTimestamp'] is Timestamp) {
+        DateTime kazaDT = (currentRecordData['kazaTimestamp'] as Timestamp).toDate();
+        dataForPdf['kazaTarihi'] = DateFormat('dd.MM.yyyy', 'tr_TR').format(kazaDT);
+        dataForPdf['kazaSaati'] = DateFormat('HH:mm').format(kazaDT);
+      }
+      
+      dataForPdf['recordId'] = widget.recordId;
+      return dataForPdf;
   }
 
   /// PDF OLUŞTURMA FONKSİYONU: Sunucuya istek atıp PDF'i alır.
