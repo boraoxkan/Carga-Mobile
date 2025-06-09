@@ -254,7 +254,7 @@ class _ReportsPageState extends State<ReportsPage> {
                     leading: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error),
                     title: Text('Bu Tutanağı Listemden Kaldır', style: TextStyle(color: theme.colorScheme.error)),
                     onTap: () async {
-                       bool confirm = await showDialog<bool>(
+                      bool confirm = await showDialog<bool>(
                         context: context,
                         builder: (BuildContext dialogContext) => AlertDialog(
                           title: const Text('Listeden Kaldırma Onayı'),

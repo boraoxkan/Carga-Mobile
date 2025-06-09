@@ -537,52 +537,29 @@ class _ReportSummaryPageState extends State<ReportSummaryPage> {
     });
     
     try {
-      // ADIM 1: Önce kullanıcının kendi bilgilerini kaydet.
+      // ADIM 1: Sadece kullanıcının kendi bilgilerini kaydet.
       // Eğer yeni bir fotoğraf seçildiyse sunucuda işle ve kaydet.
       if (_selectedImageFileForUbuntu != null && _processedImageBytesFromUbuntu == null) {
           // Bu fonksiyon içinde zaten _saveCurrentUserDataToFirestore çağrılıyor.
           await _processWithUbuntuServerAndSave(); 
       } else {
           // Yeni fotoğraf yoksa mevcut bilgileri direkt kaydet.
+          // _saveCurrentUserDataToFirestore zaten status'ü 'all_data_submitted' olarak güncelleyecektir.
           await _saveCurrentUserDataToFirestore(
               processedImageBase64: _processedImageBytesFromUbuntu != null ? base64Encode(_processedImageBytesFromUbuntu!) : null,
               detectionResults: _detectionResultsFromUbuntu
           );
       }
 
-      // ADIM 2: Kaydetme sonrası Firestore'dan belgenin güncel halini tekrar çek.
-      final recordDoc = await FirebaseFirestore.instance.collection('records').doc(widget.recordId).get();
+      // ADIM 2: AI raporu oluşturma mantığı buradan kaldırıldı. Bu işi Cloud Function yapacak.
       
-      if (!recordDoc.exists) {
-        throw Exception("Rapor kaydı bulunamadı. Lütfen tekrar deneyin.");
-      }
-      
-      // ADIM 3: Raporun durumunu kontrol et ve GEREKİRSE AI sürecini başlat.
-      final currentStatus = recordDoc.data()?['status'] as String?;
-      
-      if (mounted && currentStatus == 'all_data_submitted') {
-          // AI raporu oluşturulmamışsa veya başarısız olduysa işlemi başlat.
-          final aiStatus = recordDoc.data()?['aiReportStatus'] as String?;
-          if (aiStatus == null || aiStatus == 'Failed') {
-            
-            // ÖNCE AI DURUMUNU 'Processing' OLARAK İŞARETLE!
-            await FirebaseFirestore.instance.collection('records').doc(widget.recordId).update({
-              'aiReportStatus': 'Processing',
-            });
-            
-            // Şimdi AI sürecini güvenle başlatabiliriz.
-            _initiateAndFinalizeAiReport(widget.recordId);
-            
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('Tüm bilgiler tamamlandı. AI raporu arka planda oluşturuluyor...'),
-                duration: Duration(seconds: 4),
-            ));
-          }
-      }
-      
-      // ADIM 4: Kullanıcıyı ana sayfaya yönlendir.
+      // ADIM 3: Kullanıcıyı ana sayfaya yönlendir.
       if(mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tutanak bilgileriniz başarıyla kaydedildi.')));
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Tutanak bilgileriniz başarıyla kaydedildi. Rapor hazırlanıyor...'),
+            duration: Duration(seconds: 3),
+            )
+          );
           Navigator.popUntil(context, (route) => route.isFirst);
       }
 
